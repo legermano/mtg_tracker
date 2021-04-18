@@ -1,0 +1,4 @@
+/lib
+/vendor
+app/database/AllPrintings.sqlite
+AllPrices.json
