@@ -1,4 +1,7 @@
 <?php
+
+use Adianti\Database\TRecord;
+
 /**
  * SystemUserProgram
  *
@@ -14,8 +17,8 @@ class SystemUserProgram extends TRecord
     const TABLENAME = 'system_user_program';
     const PRIMARYKEY= 'id';
     const IDPOLICY =  'max'; // {max, serial}
-    
-    
+
+
     /**
      * Constructor method
      */

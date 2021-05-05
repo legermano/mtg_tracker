@@ -1,4 +1,20 @@
 <?php
+
+use Adianti\Base\TStandardList;
+use Adianti\Control\TAction;
+use Adianti\Registry\TSession;
+use Adianti\Widget\Container\TPanelGroup;
+use Adianti\Widget\Container\TVBox;
+use Adianti\Widget\Datagrid\TDataGrid;
+use Adianti\Widget\Datagrid\TDataGridAction;
+use Adianti\Widget\Datagrid\TDataGridColumn;
+use Adianti\Widget\Datagrid\TPageNavigation;
+use Adianti\Widget\Form\TEntry;
+use Adianti\Widget\Form\TLabel;
+use Adianti\Widget\Util\TXMLBreadCrumb;
+use Adianti\Wrapper\BootstrapDatagridWrapper;
+use Adianti\Wrapper\BootstrapFormBuilder;
+
 class FormatList extends TStandardList
 {
     protected $form;
@@ -20,8 +36,8 @@ class FormatList extends TStandardList
         parent::setDefaultOrder('name','asc'); //Defines the default order
 
         parent::addFilterField('id','=','id');
-        parent::addFilterField('name','like','name');
-        parent::addFilterField('format_key','like','format_key');
+        parent::addFilterField('name','ilike','name');
+        parent::addFilterField('format_key','ilike','format_key');
 
         //Create the form
         $this->form = new BootstrapFormBuilder('form_search_Format');
@@ -100,7 +116,7 @@ class FormatList extends TStandardList
         $this->pageNavigation->setAction(new TAction(array($this, 'onReload')));
         $this->pageNavigation->setWidth($this->datagrid->getWidth());
 
-        $panel = new TPanelGroup;
+        $panel = new TPanelGroup();
         $panel->add($this->datagrid)->style = 'overflow-x:auto';
         $panel->addFooter($this->pageNavigation);
 

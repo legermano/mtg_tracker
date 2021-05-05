@@ -1,5 +1,11 @@
 /* Navbar ====================================== */
 @import url(materialize.css);
+
+.left-pack {
+    max-height: 76vh;
+    overflow: auto;
+}
+
 .navbar {
   font-family: "Roboto", sans-serif;
   -webkit-border-radius: 0;

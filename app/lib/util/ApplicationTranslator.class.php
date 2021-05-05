@@ -343,6 +343,15 @@ class ApplicationTranslator
         $this->messages['en'][] = 'Special';
         $this->messages['en'][] = 'Bonus';
         $this->messages['en'][] = 'Artist';
+        $this->messages['en'][] = 'Quantity';
+        $this->messages['en'][] = 'Market';
+        $this->messages['en'][] = 'Prices';
+        $this->messages['en'][] = 'Code';
+        $this->messages['en'][] = 'Block';
+        $this->messages['en'][] = 'Online only';
+        $this->messages['en'][] = 'Size';
+        $this->messages['en'][] = 'Has card';
+        $this->messages['en'][] = 'Release date';
         //fim
 
         $this->messages['pt'] = [];
@@ -665,6 +674,15 @@ class ApplicationTranslator
         $this->messages['pt'][] = 'Especial';
         $this->messages['pt'][] = 'Bônus';
         $this->messages['pt'][] = 'Artista';
+        $this->messages['pt'][] = 'Quantidade';
+        $this->messages['pt'][] = 'Loja';
+        $this->messages['pt'][] = 'Preços';
+        $this->messages['pt'][] = 'Código';
+        $this->messages['pt'][] = 'Bloco';
+        $this->messages['pt'][] = 'Somente online';
+        $this->messages['pt'][] = 'Tamanho';
+        $this->messages['pt'][] = 'Possui carta';
+        $this->messages['pt'][] = 'Data de lançamento';
         //fim
 
         $this->messages['es'] = [];

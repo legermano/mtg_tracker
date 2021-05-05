@@ -1,4 +1,17 @@
 <?php
+
+use Adianti\Base\TStandardForm;
+use Adianti\Control\TAction;
+use Adianti\Core\AdiantiCoreTranslator;
+use Adianti\Database\TTransaction;
+use Adianti\Validator\TRequiredValidator;
+use Adianti\Widget\Container\TVBox;
+use Adianti\Widget\Dialog\TMessage;
+use Adianti\Widget\Form\TEntry;
+use Adianti\Widget\Form\TLabel;
+use Adianti\Widget\Util\TXMLBreadCrumb;
+use Adianti\Wrapper\BootstrapFormBuilder;
+
 class FormatForm extends TStandardForm
 {
     protected $form;

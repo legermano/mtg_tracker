@@ -1,4 +1,7 @@
 <?php
+
+use Adianti\Database\TRecord;
+
 /**
  * SystemUserGroup
  *
@@ -14,8 +17,8 @@ class SystemUserGroup extends TRecord
     const TABLENAME = 'system_user_group';
     const PRIMARYKEY= 'id';
     const IDPOLICY =  'max'; // {max, serial}
-    
-    
+
+
     /**
      * Constructor method
      */

@@ -4,14 +4,51 @@
     $loader->register();
 
     use \JsonMachine\JsonMachine;
+    use Adianti\Database\TTransaction;
 
-    $file = JsonMachine::fromFile("AllPrintings.json","/data");
+    //Update the database
+    // exec('rm -f AllPrintings.json');
+    // exec('wget https://mtgjson.com/api/v5/AllPrintings.json');
+
+    //Update the JSON of prices
+    // exec('rm -f AllPrices.json');
+    // exec('wget https://mtgjson.com/api/v5/AllPrices.json');
+
     TTransaction::open("mtg_tracker");
+
+    $cards  = JsonMachine::fromFile("AllPrintings.json","/data");
     echo "Começo do loop ".date('H:i:s',time());
-    foreach ($file as $key => $data) {
+
+    foreach ($cards as $key => $data) {
+        $s = new Set;
+        $s->fromArray($data);
+        $s->isfoilonly       = $s->isfoilonly       ?? FALSE;
+        $s->isforeignonly    = $s->isforeignonly    ?? FALSE;
+        $s->isnonfoilonly    = $s->isnonfoilonly    ?? FALSE;
+        $s->isonlineonly     = $s->isonlineonly     ?? FALSE;
+        $s->ispartialpreview = $s->ispartialpreview ?? FALSE;
+        $s->isfoilonly       = $s->isfoilonly       ?? FALSE;
+        $s->store();
         foreach ($data['cards'] as $card) {
             $c = new Card;
             $c->fromArray($card);
+            $c->setname                 = $s->name;
+            $c->originalname            = $c->facename ?? $c->name;
+            $c->hasalternativedecklimit = $c->hasalternativedecklimit ?? FALSE;
+            $c->hascontentwarning       = $c->hascontentwarning       ?? FALSE;
+            $c->hasfoil                 = $c->hasfoil                 ?? FALSE;
+            $c->hasnonfoil              = $c->hasnonfoil              ?? FALSE;
+            $c->isalternative           = $c->isalternative           ?? FALSE;
+            $c->isfullart               = $c->isfullart               ?? FALSE;
+            $c->isonlineonly            = $c->isonlineonly            ?? FALSE;
+            $c->isoversized             = $c->isoversized             ?? FALSE;
+            $c->ispromo                 = $c->ispromo                 ?? FALSE;
+            $c->isreprint               = $c->isreprint               ?? FALSE;
+            $c->isreserved              = $c->isreserved              ?? FALSE;
+            $c->isstarter               = $c->isstarter               ?? FALSE;
+            $c->isstoryspotlight        = $c->isstoryspotlight        ?? FALSE;
+            $c->istextless              = $c->istextless              ?? FALSE;
+            $c->istimeshifted           = $c->istimeshifted           ?? FALSE;
 
             if (array_key_exists("foreignData", $card)) {
                 $allNames = array();
@@ -19,24 +56,24 @@
                     $allNames['names'][] = $foreignData['name'];
                     if ($foreignData['language'] == 'Portuguese (Brazil)') {
                         if (array_key_exists("flavorText", $foreignData)) {
-                            $c->flavorTextPTBR   = $foreignData['flavorText'];
+                            $c->flavortextptbr   = $foreignData['flavorText'];
                         }
                         if (array_key_exists("multiverseId", $foreignData)) {
-                            $c->multiverseIdPTBR = $foreignData['multiverseId'];
+                            $c->multiverseidptbr = $foreignData['multiverseId'];
                         }
                         if (array_key_exists("name", $foreignData)) {
-                            $c->namePTBR         = $foreignData['name'];
+                            $c->nameptbr         = $foreignData['name'];
                         }
                         if (array_key_exists("text", $foreignData)) {
-                            $c->textPTBR         = $foreignData['text'];
+                            $c->textptbr         = $foreignData['text'];
                         }
                         if (array_key_exists("type", $foreignData)) {
-                            $c->typePTBR         = $foreignData['type'];
+                            $c->typeptbr         = $foreignData['type'];
                         }
                     }
                 }
                 if ($allNames) {
-                    $c->allNames = json_encode($allNames, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+                    $c->allnames = json_encode($allNames, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
                 }
             }
 
@@ -51,7 +88,7 @@
             }
 
             if (array_key_exists("colorIdentity", $card)) {
-                $c->colorIdentity = implode($card['colorIdentity']);
+                $c->coloridentity = implode($card['colorIdentity']);
             }
 
             if (array_key_exists("colors", $card)) {
@@ -102,7 +139,7 @@
                     $purchaseUrls['purchaseUrls'][] = $value;
                 }
                 if ($purchaseUrls) {
-                    $c->purchaseUrls = json_encode($purchaseUrls, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+                    $c->purchaseurls = json_encode($purchaseUrls, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
                 }
             }
 
@@ -159,5 +196,51 @@
         }
     }
     TTransaction::close();
-    echo "<br> Final do loop ".date('H:i:s',time());
+
+    //Get the prices
+    // $prices = JsonMachine::fromFile("AllPrices.json","/data");
+    // TTransaction::open("mtg_tracker");
+    // foreach ($prices as $key => $data) {
+    //     try {
+    //         $card = new Card($key);
+    //     } catch (Exception $e) {
+    //         echo "Card not found - UUID {$key} \n\r";
+    //         continue;
+    //     }
+
+    //     if ($card) {
+    //         $save = false;
+    //         $arr = array();
+
+    //         foreach ($data as $format => $data_value)
+    //         {
+    //             if ($format == 'paper')
+    //             {
+    //                 $paper = $data[$format];
+
+    //                 foreach ($paper as $market => $prices) {
+    //                     $arr[$market]['currency'] = $prices['currency'];
+    //                     foreach ($prices as $price_type => $value) {
+    //                         if ($price_type == 'retail') {
+    //                             $retail = $value;
+    //                             foreach ($retail as $type => $price) {
+    //                                 $arr[$market][$type] = end($price);
+    //                                 $save = true;
+    //                             }
+    //                         }
+    //                     }
+    //                 }
+
+    //                 if ($save)
+    //                 {
+    //                     $card->prices = json_encode($arr);
+    //                     $card->store();
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+    // TTransaction::close();
+
+    echo "\n\r Final do loop ".date('H:i:s',time());
 ?>

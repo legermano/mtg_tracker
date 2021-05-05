@@ -1,10 +1,17 @@
 <?php
+use Adianti\Database\TRecord;
+use Adianti\Database\TTransaction;
+use Adianti\Database\TCriteria;
+use Adianti\Database\TFilter;
+use Adianti\Registry\TSession;
 class OwnedCard extends TRecord
 {
     const TABLENAME  = 'owned_card';
     const PRIMARYKEY = 'id';
     const IDPOLICY   = 'max';
     const DATABASE   = 'mtg_tracker';
+
+    use SystemChangeLogTrait;
 
     public function __construct($id = null)
     {
@@ -43,7 +50,7 @@ class OwnedCard extends TRecord
         return $this->card;
     }
 
-    public static function incrementQuantity($uuid)
+    public static function incrementQuantity($uuid,$foil = false)
     {
         TTransaction::open(self::DATABASE);
         $criteria = new TCriteria();
@@ -53,7 +60,15 @@ class OwnedCard extends TRecord
 
         if ($owneds) {
             foreach ($owneds as $owned) {
-                $owned->quantity = $owned->quantity + 1;
+                if ($foil)
+                {
+                    $owned->quantity_foil = $owned->quantity_foilç + 1;
+                }
+                else
+                {
+                    $owned->quantity = $owned->quantity + 1;
+                }
+
                 $owned->store();
             }
         }
@@ -61,16 +76,16 @@ class OwnedCard extends TRecord
         {
             $owned = new OwnedCard;
             $owned->system_user_id = TSession::getValue('userid');
-            $owned->card_uuid = $uuid;
-            $owned->quantity = 1;
-            $owned->quantity_foil = 0;
+            $owned->card_uuid      = $uuid;
+            $owned->quantity       = $foil ? 0 : 1;
+            $owned->quantity_foil  = $foil ? 1 : 0;
             $owned->store();
 
         }
         TTransaction::close();
     }
 
-    public static function decrementQuantity($uuid)
+    public static function decrementQuantity($uuid,$foil = false)
     {
         TTransaction::open(self::DATABASE);
         $criteria = new TCriteria();
@@ -79,8 +94,13 @@ class OwnedCard extends TRecord
         $owneds = OwnedCard::getObjects($criteria);
 
         foreach ($owneds as $owned) {
-            if ($owned->quantity > 0) {
+            if (!$foil && $owned->quantity > 0) {
                 $owned->quantity = $owned->quantity - 1;
+                $owned->store();
+            }
+
+            if ($foil && $owned->quantity_foil > 0) {
+                $owned->quantity_foil = $owned->quantity_foil - 1;
                 $owned->store();
             }
         }

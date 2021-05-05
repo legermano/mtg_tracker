@@ -1,9 +1,14 @@
 <?php
+
+use Adianti\Database\TRecord;
+
 class DeckCard extends TRecord
 {
     const TABLENAME  = 'deck_card';
     const PRIMARYKEY = 'id';
     const IDPOLICY   = 'max';
+
+    use SystemChangeLogTrait;
 
     /**
      * Constructor method

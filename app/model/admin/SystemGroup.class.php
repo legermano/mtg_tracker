@@ -1,4 +1,10 @@
 <?php
+
+use Adianti\Database\TCriteria;
+use Adianti\Database\TFilter;
+use Adianti\Database\TRecord;
+use Adianti\Database\TRepository;
+
 /**
  * SystemGroup
  *
@@ -14,7 +20,7 @@ class SystemGroup extends TRecord
     const TABLENAME  = 'system_group';
     const PRIMARYKEY = 'id';
     const IDPOLICY   = 'max'; // {max, serial}
-    
+
     /**
      * Constructor method
      */
@@ -23,7 +29,7 @@ class SystemGroup extends TRecord
         parent::__construct($id);
         parent::addAttribute('name');
     }
-    
+
     /**
      * Clone the entire object and related ones
      */
@@ -31,11 +37,11 @@ class SystemGroup extends TRecord
     {
         $programs = $this->getSystemPrograms();
         $users    = $this->getSystemUsers();
-        
+
         unset($this->id);
         $this->name .= ' (clone)';
         $this->store();
-        
+
         if ($programs)
         {
             foreach ($programs as $program)
@@ -43,7 +49,7 @@ class SystemGroup extends TRecord
                 $this->addSystemProgram( $program );
             }
         }
-        
+
         if ($users)
         {
             foreach ($users as $user)
@@ -52,7 +58,7 @@ class SystemGroup extends TRecord
             }
         }
     }
-    
+
     /**
      * Add a SystemProgram to the SystemGroup
      * @param $object Instance of SystemProgram
@@ -67,7 +73,7 @@ class SystemGroup extends TRecord
             $object->store();
         }
     }
-    
+
     /**
      * Add a SystemUser to the SystemGroup
      * @param $object Instance of SystemUser
@@ -82,7 +88,7 @@ class SystemGroup extends TRecord
             $object->store();
         }
     }
-    
+
     /**
      * Return the SystemProgram's
      * @return Collection of SystemProgram
@@ -90,7 +96,7 @@ class SystemGroup extends TRecord
     public function getSystemPrograms()
     {
         $system_programs = array();
-        
+
         // load the related System_program objects
         $repository = new TRepository('SystemGroupProgram');
         $criteria = new TCriteria;
@@ -103,7 +109,7 @@ class SystemGroup extends TRecord
                 $system_programs[] = new SystemProgram( $system_group_system_program->system_program_id );
             }
         }
-        
+
         return $system_programs;
     }
 
@@ -114,7 +120,7 @@ class SystemGroup extends TRecord
     public function getSystemUsers()
     {
         $system_users = array();
-        
+
         // load the related System_user objects
         $repository = new TRepository('SystemUserGroup');
         $criteria = new TCriteria;
@@ -127,10 +133,10 @@ class SystemGroup extends TRecord
                 $system_users[] = new SystemUser( $system_group_system_user->system_user_id );
             }
         }
-        
+
         return $system_users;
     }
-    
+
     /**
      * Reset aggregates
      */
@@ -140,7 +146,7 @@ class SystemGroup extends TRecord
         SystemGroupProgram::where('system_group_id', '=', $this->id)->delete();
         SystemUserGroup::where('system_group_id', '=', $this->id)->delete();
     }
-    
+
     /**
      * Delete the object and its aggregates
      * @param $id object ID
@@ -149,10 +155,10 @@ class SystemGroup extends TRecord
     {
         // delete the related System_groupSystem_program objects
         $id = isset($id) ? $id : $this->id;
-        
+
         SystemGroupProgram::where('system_group_id', '=', $id)->delete();
         SystemUserGroup::where('system_group_id', '=', $id)->delete();
-        
+
         // delete the object itself
         parent::delete($id);
     }

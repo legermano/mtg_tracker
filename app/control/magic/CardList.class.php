@@ -1,4 +1,30 @@
 <?php
+
+use Adianti\Base\TStandardList;
+use Adianti\Wrapper\BootstrapFormBuilder;
+use Adianti\Widget\Form\TEntry;
+use Adianti\Database\TCriteria;
+use Adianti\Database\TFilter;
+use Adianti\Widget\Wrapper\TDBUniqueSearch;
+use Adianti\Widget\Form\TLabel;
+use Adianti\Registry\TSession;
+use Adianti\Wrapper\BootstrapDatagridWrapper;
+use Adianti\Control\TAction;
+use Adianti\Widget\Datagrid\TDataGrid;
+use Adianti\Widget\Datagrid\TDataGridAction;
+use Adianti\Widget\Datagrid\TDataGridColumn;
+use Adianti\Widget\Util\TImage;
+use Adianti\Widget\Base\TElement;
+use Adianti\Widget\Dialog\TMessage;
+use Adianti\Database\TTransaction;
+use Adianti\Widget\Container\TVBox;
+use Adianti\Core\AdiantiCoreTranslator;
+use Adianti\Widget\Datagrid\TPageNavigation;
+use Adianti\Widget\Util\TXMLBreadCrumb;
+use Adianti\Widget\Container\TPanelGroup;
+use Adianti\Database\TExpression;
+use Adianti\Widget\Form\TCheckButton;
+
 class CardList extends TStandardList
 {
     protected $form;
@@ -15,7 +41,7 @@ class CardList extends TStandardList
     {
         parent::__construct();
 
-        parent::setDatabase('all_printings');    //Defines the detabase
+        parent::setDatabase('mtg_tracker');    //Defines the detabase
         parent::setActiveRecord('Card');     //Defines the active record
         parent::setDefaultOrder('name','asc'); //Defines the default order
 
@@ -29,16 +55,23 @@ class CardList extends TStandardList
         //Create the form fields
         $name    = new TEntry("name");
         $criteriaSet = new TCriteria;
-        $criteriaSet->add(new TFilter('isOnlineOnly', '=', '0'));
-        $setCode = new TDBUniqueSearch("setCode","all_printings","Set","code","name","name asc",$criteriaSet);
+        $criteriaSet->add(new TFilter('isOnlineOnly', '=', 'f'));
+        $setCode = new TDBUniqueSearch("setCode","mtg_tracker","Set","code","name","name asc",$criteriaSet);
+        $format  = new TDBUniqueSearch("format","mtg_tracker","Format","format_key","name","name asc");
+        $hasCard = new TCheckButton('hasCard');
 
         //Add the fields
         $this->form->addFields( [new TLabel(_t('Name'))], [$name]);
         $this->form->addFields( [new TLabel(_t('Set'))],  [$setCode]);
+        $this->form->addFields( [new TLabel(_t('Format'))],  [$format]);
+        $this->form->addFields( [new TLabel(_t('Has card'))],  [$hasCard]);
         $name->setSize('70%');
         $setCode->setSize('70%');
         $setCode->setMask('({code}) {name}');
         $setCode->setMinLength(1);
+        $format->setSize('70%');
+        $format->setMinLength(0);
+        $hasCard->setSize('1%');
 
         //Keep the form filled during navigation with session data
         $this->form->setData( TSession::getValue('Card_filter_data'));
@@ -78,7 +111,8 @@ class CardList extends TStandardList
         $action_edit->setButtonClass('btn btn-default');
         $action_edit->setLabel(_t('View'));
         $action_edit->setImage('fa:search blue ');
-        $action_edit->setField('originalName');
+        $action_edit->setField('originalname');
+        $action_edit->setField('setcode');
         $action_edit->setField('id');
         $this->datagrid->addAction($action_edit);
 
@@ -132,28 +166,7 @@ class CardList extends TStandardList
             // open a transaction with database
             TTransaction::open($this->database);
 
-            // instancia um repositório
-            $repository = new TRepository($this->activeRecord);
             $limit = isset($this->limit) ? ( $this->limit > 0 ? $this->limit : NULL) : 10;
-
-            // creates a criteria
-            $criteria = isset($this->criteria) ? clone $this->criteria : new TCriteria;
-            if ($this->order)
-            {
-                $criteria->setProperty('order',     $this->order);
-                $criteria->setProperty('direction', $this->direction);
-            }
-
-
-            if (is_array($this->orderCommands) && !empty($param['order']) && !empty($this->orderCommands[$param['order']]))
-            {
-                $param_criteria['order'] = $this->orderCommands[$param['order']];
-            }
-
-            $criteria->add( new TFilter('isOnlineOnly', '=', '0')); //Only shows phisical cards
-            $criteria->setProperties($param_criteria); // order, offset
-            $criteria->setProperty('limit', $limit);
-            $criteria->setProperty('group', 'name'); // group by the name of the card
 
             if ($this->formFilters)
             {
@@ -164,19 +177,19 @@ class CardList extends TStandardList
                     if (TSession::getValue($this->activeRecord.'_filter_'.$filterField))
                     {
                         // add the filter stored in the session to the criteria
-                        $criteria->add(TSession::getValue($this->activeRecord.'_filter_'.$filterField), $logic_operator);
                         $$filterField = TSession::getValue($this->activeRecord.'_filter_'.$filterField);
                     }
                 }
             }
 
             // load the objects according to criteria
-            // $objects = $repository->load($criteria, FALSE);
             $fields  = $this->form->getFields();
             $name    = $fields['name']->getValue();
             $setCode = $fields['setCode']->getValue();
+            $format  = $fields['format']->getValue();
+            $hasCard = $fields['hasCard']->getValue();
             $offset  = $param_criteria["offset"] ?? 0;
-            $objects = Card::getCards($name,$setCode,$limit,$offset,true);
+            $objects = Card::getCards($name,$setCode,$format,(!empty($hasCard)),$limit,$offset);
 
             if (is_callable($this->transformCallback))
             {
@@ -189,28 +202,13 @@ class CardList extends TStandardList
                 // iterate the collection of active records
                 foreach ($objects as $object)
                 {
-                    $object->image = Card::getImageByName(($object->originalName ?? $object->name),$object->multiverseId_t);
-                    $object->getDescription();
                     // add the object inside the datagrid
                     $this->datagrid->addItem($object);
                 }
             }
 
             //Custom count of total results
-            $conn = TTransaction::get();
-            $sql = "SELECT count(*) AS \"count\" FROM cards WHERE id in (
-                        SELECT a.id
-                        FROM cards a
-                        LEFT JOIN foreign_data b ON (a.uuid = b.uuid)
-                        WHERE a.isOnlineOnly = 0
-                          AND ( COALESCE(a.faceName,a.name) like \"%{$name}%\" OR b.name like \"%{$name}%\")
-                          AND a.setCode like \"%{$setCode}%\"
-                        GROUP BY a.name
-                    )";
-            $sth = $conn->prepare($sql);
-            $sth->execute();
-            $result = $sth->fetchAll();
-            $count  = $result[0]["count"];
+            $count = Card::countCardsByName($name,$setCode);
 
             if (isset($this->pageNavigation))
             {
@@ -234,7 +232,7 @@ class CardList extends TStandardList
         catch (Exception $e) // in case of exception
         {
             // shows the exception error message
-            new TMessage('error', $e->getMessage());
+            new TMessage('error', $e);
             // undo all pending operations
             TTransaction::rollback();
         }

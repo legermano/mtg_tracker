@@ -1,5 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <menu>
+  <menuitem label="Magic">
+    <icon>fas:magic fa-fw</icon>
+    <menu>
+      <menuitem label="_t{Cards}">
+        <action>CardList</action>
+        <icon>fas:sim-card fa-fw</icon>
+      </menuitem>
+      <menuitem label="_t{Formats}">
+        <action>FormatList</action>
+        <icon>fas:clipboard-list fa-fw</icon>
+      </menuitem>
+      <menuitem label="_t{Sets}">
+        <action>SetList</action>
+        <icon>fas:book fa-fw</icon>
+      </menuitem>
+    </menu>
+  </menuitem>
   <menuitem label="_t{Administration}">
     <icon>fas:home fa-fw</icon>
     <menu>
@@ -42,14 +59,6 @@
       <menuitem label="_t{Preferences}">
         <action>SystemPreferenceForm#method=onEdit</action>
         <icon>fas:cog fa-fw</icon>
-      </menuitem>
-      <menuitem label="_t{Formats}">
-        <action>FormatList</action>
-        <icon>fas:dharmachakra fa-fw</icon>
-      </menuitem>
-      <menuitem label="_t{Cards}">
-        <action>CardList</action>
-        <icon>fas:sim-card fa-fw</icon>
       </menuitem>
     </menu>
   </menuitem>

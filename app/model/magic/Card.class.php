@@ -1,10 +1,14 @@
 <?php
+
+use Adianti\Database\TRecord;
+use Adianti\Database\TTransaction;
+use Adianti\Registry\TSession;
 class Card extends TRecord
 {
-    const TABLENAME = 'cards';
-    const PRIMARYKEY= 'id';
+    const TABLENAME = 'card';
+    const PRIMARYKEY= 'uuid';
     const IDPOLICY =  'max';
-    const DATABASE = 'all_printings';
+    const DATABASE = 'mtg_tracker';
     const SYMBOLS = array(
         '{T}'       => 'T',
         '{Q}'       => 'Q',
@@ -75,116 +79,232 @@ class Card extends TRecord
     public function __construct($id = null)
     {
         parent::__construct($id);
+        parent::addAttribute('allNames');
         parent::addAttribute('artist');
         parent::addAttribute('asciiName');
         parent::addAttribute('availability');
-        parent::addAttribute('borderColor');
-        parent::addAttribute('cardKingdomFoilId');
-        parent::addAttribute('cardKingdomId');
-        parent::addAttribute('colorIdentity');
-        parent::addAttribute('colorIndicator');
+        parent::addAttribute('bordercolor');
+        parent::addAttribute('cardKingdomfoilid');
+        parent::addAttribute('cardkingdomid');
+        parent::addAttribute('coloridentity');
+        parent::addAttribute('colorindicator');
         parent::addAttribute('colors');
-        parent::addAttribute('convertedManaCost');
-        parent::addAttribute('duelDeck');
+        parent::addAttribute('convertedmanacost');
+        parent::addAttribute('dueldeck');
         parent::addAttribute('edhrecRank');
-        parent::addAttribute('faceConvertedManaCost');
-        parent::addAttribute('faceName');
-        parent::addAttribute('flavorName');
-        parent::addAttribute('flavorText');
-        parent::addAttribute('frameEffects');
-        parent::addAttribute('frameVersion');
+        parent::addAttribute('faceConvertedmanacost');
+        parent::addAttribute('facename');
+        parent::addAttribute('flavorname');
+        parent::addAttribute('flavortext');
+        parent::addAttribute('flavortextptbr');
+        parent::addAttribute('frameeffects');
+        parent::addAttribute('frameversion');
         parent::addAttribute('hand');
-        parent::addAttribute('hasAlternativeDeckLimit');
-        parent::addAttribute('hasContentWarning');
-        parent::addAttribute('hasFoil');
-        parent::addAttribute('hasNonFoil');
-        parent::addAttribute('isAlternative');
-        parent::addAttribute('isFullArt');
-        parent::addAttribute('isOnlineOnly');
-        parent::addAttribute('isOversized');
-        parent::addAttribute('isPromo');
-        parent::addAttribute('isReprint');
-        parent::addAttribute('isReserved');
-        parent::addAttribute('isStarter');
-        parent::addAttribute('isStorySpotlight');
-        parent::addAttribute('isTextless');
-        parent::addAttribute('isTimeshifted');
+        parent::addAttribute('hasAlternativedecklimit');
+        parent::addAttribute('hascontentwarning');
+        parent::addAttribute('hasfoil');
+        parent::addAttribute('hasnonfoil');
+        parent::addAttribute('isalternative');
+        parent::addAttribute('isfullart');
+        parent::addAttribute('isonlineonly');
+        parent::addAttribute('isoversized');
+        parent::addAttribute('ispromo');
+        parent::addAttribute('isreprint');
+        parent::addAttribute('isreserved');
+        parent::addAttribute('isstarter');
+        parent::addAttribute('isstoryspotlight');
+        parent::addAttribute('istextless');
+        parent::addAttribute('istimeshifted');
         parent::addAttribute('keywords');
         parent::addAttribute('layout');
-        parent::addAttribute('leadershipSkills');
+        parent::addAttribute('leadershipskills');
+        parent::addAttribute('legalities');
         parent::addAttribute('life');
         parent::addAttribute('loyalty');
-        parent::addAttribute('manaCost');
+        parent::addAttribute('manacost');
         parent::addAttribute('mcmId');
-        parent::addAttribute('mcmMetaId');
-        parent::addAttribute('mtgArenaId');
-        parent::addAttribute('mtgjsonV4Id');
-        parent::addAttribute('mtgoFoilId');
-        parent::addAttribute('mtgoId');
-        parent::addAttribute('multiverseId');
+        parent::addAttribute('mcmmetaid');
+        parent::addAttribute('mtgarenaid');
+        parent::addAttribute('mtgjsonv4id');
+        parent::addAttribute('mtgofoilid');
+        parent::addAttribute('mtgoid');
+        parent::addAttribute('multiverseid');
+        parent::addAttribute('multiverseidptbr');
         parent::addAttribute('name');
+        parent::addAttribute('nameptbr');
         parent::addAttribute('number');
-        parent::addAttribute('originalReleaseDate');
-        parent::addAttribute('originalText');
-        parent::addAttribute('originalType');
-        parent::addAttribute('otherFaceIds');
+        parent::addAttribute('originalname');
+        parent::addAttribute('originalreleasedate');
+        parent::addAttribute('originaltext');
+        parent::addAttribute('originaltype');
+        parent::addAttribute('otherfaceids');
         parent::addAttribute('power');
         parent::addAttribute('printings');
-        parent::addAttribute('promoTypes');
-        parent::addAttribute('purchaseUrls');
+        parent::addAttribute('prices');
+        parent::addAttribute('promotypes');
+        parent::addAttribute('purchaseurls');
         parent::addAttribute('rarity');
-        parent::addAttribute('scryfallId');
-        parent::addAttribute('scryfallIllustrationId');
-        parent::addAttribute('scryfallOracleId');
-        parent::addAttribute('setCode');
+        parent::addAttribute('rullings');
+        parent::addAttribute('scryfallid');
+        parent::addAttribute('scryfallillustrationid');
+        parent::addAttribute('scryfalloracleId');
+        parent::addAttribute('setcode');
+        parent::addAttribute('setname');
         parent::addAttribute('side');
         parent::addAttribute('subtypes');
         parent::addAttribute('supertypes');
-        parent::addAttribute('tcgplayerProductId');
+        parent::addAttribute('tcgplayerproductid');
         parent::addAttribute('text');
+        parent::addAttribute('textptbr');
         parent::addAttribute('toughness');
         parent::addAttribute('type');
+        parent::addAttribute('typeptbr');
         parent::addAttribute('types');
-        parent::addAttribute('uuid');
         parent::addAttribute('variations');
         parent::addAttribute('watermark');
     }
 
-    public static function getCards($name = "", $setCode = "", $limit = 10, $offset = 0, $translate = false)
+    public static function getCards($name = "", $setCode = "", $format = "", $ownsCard = false, $limit = 10, $offset = 0)
     {
         // Removes the " symbol
         // Some cards have this on the name and it breaks the sql statement
-        $name    = str_replace("\"","",$name);
-        $setCode = str_replace("\"","",$setCode);
+        $name    = str_replace("'","''",$name);
+        $user_id = TSession::getValue('userid');
 
+        // If the current language is portugues
+        // Needs to run a different query to order by name correctly
         if (ApplicationTranslator::getLanguage() == 'pt')
         {
-            $sql = "SELECT a.*, coalesce(group_concat(distinct(c.name)),a.name) as t_name, count(a.id) as quantity
-                    FROM cards a
-                    LEFT JOIN foreign_data b ON (a.uuid = b.uuid)
-                    LEFT JOIN foreign_data c ON (a.uuid = c.uuid AND c.language = 'Portuguese (Brazil)')
-                    WHERE a.isOnlineOnly = 0
-                    AND ( COALESCE(a.faceName,a.name) like \"%{$name}%\" OR b.name like \"%{$name}%\")
-                    AND a.setCode like \"%{$setCode}%\"
-                    GROUP BY a.name
-                    ORDER BY t_name
-                    LIMIT {$limit}
-                    OFFSET {$offset}
-                    ";
+            $sql = "SELECT manaCost, convertedManaCost,
+                           split_part(coalesce(string_agg(distinct(nameptbr),'@'),coalesce(faceName,name)),'@',1)                        as t_name,
+                           split_part(coalesce(string_agg(distinct(flavorTextptbr),'@'),string_agg(distinct(flavorText),'@')),'@',1)     as t_flavorText,
+                           split_part(coalesce(string_agg(distinct(multiverseIdptbr),'@'),string_agg(distinct(multiverseId),'@')),'@',1) as t_multiverseId,
+                           split_part(coalesce(string_agg(distinct(textptbr),'@'),string_agg(distinct(text),'@')),'@',1)                 as t_text,
+                           split_part(coalesce(string_agg(distinct(typeptbr),'@'),string_agg(distinct(type),'@')),'@',1)                 as t_type,
+                           split_part(string_agg(distinct(side),'@'),'@',1)                                                              as t_side,
+                           split_part(string_agg(distinct(scryFallId),'@'),'@',1)                                                        as t_scryFallId,
+                           split_part(string_agg(distinct(uuid),'@'),'@',1)                                                              as t_uuid,
+                           split_part(string_agg(distinct(originalName),'@'),'@',1)                                                      as t_originalName
+                      FROM card
+                   ";
         }
         else
         {
-            $sql = "SELECT a.*, count(a.id) as quantity
-                    FROM cards a
-                    LEFT JOIN foreign_data b ON (a.uuid = b.uuid)
-                    WHERE a.isOnlineOnly = 0
-                    AND ( COALESCE(a.faceName,a.name) like \"%{$name}%\" OR b.name like \"%{$name}%\")
-                    AND a.setCode like \"%{$setCode}%\"
-                    GROUP BY a.name
-                    ORDER BY a.name
-                    LIMIT {$limit}
-                    OFFSET {$offset}
+            $sql = "SELECT manaCost, convertedManaCost,
+                           split_part(coalesce(faceName,name),'@',1)                as t_name,
+                           split_part(string_agg(distinct(flavorText),'@'),'@',1)   as t_flavorText,
+                           split_part(string_agg(distinct(multiverseId),'@'),'@',1) as t_multiverseId,
+                           split_part(string_agg(distinct(text),'@'),'@',1)         as t_text,
+                           split_part(string_agg(distinct(type),'@'),'@',1)         as t_type,
+                           split_part(string_agg(distinct(side),'@'),'@',1)         as t_side,
+                           split_part(string_agg(distinct(scryFallId),'@'),'@',1)   as t_scryFallId,
+                           split_part(string_agg(distinct(uuid),'@'),'@',1)         as t_uuid,
+                           split_part(string_agg(distinct(originalName),'@'),'@',1) as t_originalName
+                      FROM card
+                   ";
+        }
+
+        if($ownsCard)
+        {
+            $sql .= "INNER JOIN owned_card ON (
+                         owned_card.card_uuid = card.uuid AND
+                         owned_card.system_user_id = {$user_id} AND
+                         ( owned_card.quantity > 0 OR owned_card.quantity_foil > 0)
+                        )
                     ";
+        }
+
+        $sql .= "WHERE isOnlineOnly = 'f'
+                   AND (allNames ->> 'names' ilike '%{$name}%' OR coalesce(faceName,name) ilike '%{$name}%')
+                   AND setCode ilike '%{$setCode}%' ".
+                (empty($format) ? "" : "AND (legalities ->> 'legalities' ilike '%{$format}%')") .
+                "GROUP BY name, faceName, manaCost, convertedManaCost
+                 ORDER BY t_name
+                 LIMIT {$limit}
+                 OFFSET {$offset}
+                ";
+
+
+        $sql = "SELECT c.manaCost as manacost, c.convertedManaCost as convertedmanacost,
+                       c.t_name as name, c.t_flavorText as flavortext, c.t_multiverseId as multiverseid,
+                       c.t_text as text, c.t_type as type, c.t_side as side, c.t_scryFallId as scryfallid,
+                       c.t_uuid as uuid, c.t_originalName as originalname
+                  FROM (
+               ".$sql." ) as c";
+
+        //Open transaction and fetch the results
+        TTransaction::open(self::DATABASE);
+        $conn = TTransaction::get();
+        $sth = $conn->prepare($sql);
+        $sth->execute();
+        $results = $sth->fetchAll();
+        TTransaction::close();
+
+        $objects = array();
+        foreach ($results as $result)
+        {
+            $card = new Card;
+            $card->fromArray($result);
+            $card->id = $card->uuid;
+            $card->getDescription();
+            $card->image = self::getImage($card->multiverseid,$card->scryfallid,$card->side);
+            if (!empty($setCode)) {
+                $card->setcode = $setCode;
+            }
+            array_push($objects,$card);
+        }
+
+        return $objects;
+
+    }
+
+    public static function getCard($name,$setCode)
+    {
+        // Removes the " symbol
+        // Some cards have this on the name and it breaks the sql statement
+        $name    = str_replace("'","''",$name);
+        $user_id = TSession::getValue('userid');
+
+        if (ApplicationTranslator::getLanguage() == 'pt')
+        {
+            $sql = "SELECT manaCost, convertedManaCost, side, scryFallId, uuid,
+                           originalname, setcode, loyalty, rarity, artist, prices,
+                           keyrunecode,
+                           coalesce(owned_card.quantity,0)                 as quantity,
+                           coalesce(owned_card.quantity_foil,0)            as quantity_foil,
+                           coalesce(nameptbr,coalesce(faceName,card.name)) as name,
+                           coalesce(flavorTextptbr,flavorText)             as flavortext,
+                           coalesce(multiverseIdptbr,multiverseId)         as multiverseid,
+                           coalesce(textptbr,text)                         as text,
+                           coalesce(typeptbr,card.type)                    as type,
+                           set.name                                        as setname,
+                           (legalities ->> 'legalities')                   as legalities
+                      FROM card
+                INNER JOIN set ON (set.code = card.setcode)
+                 LEFT JOIN owned_card ON (owned_card.card_uuid = card.uuid AND owned_card.system_user_id = {$user_id})
+                     WHERE card.isOnlineOnly = 'f'
+                       AND originalname = '{$name}'
+                       AND card.setcode ilike '%{$setCode}%'
+                     ORDER BY set.releasedate asc
+                   ";
+        }
+        else
+        {
+            $sql = "SELECT manaCost, convertedManaCost, side, scryFallId, uuid,
+                           originalname, setcode, loyalty, rarity, artist, prices,
+                           flavortext,multiverseid,text,card.type, keyrunecode, legalities
+                           coalesce(owned_card.quantity,0)      as quantity,
+                           coalesce(owned_card.quantity_foil,0) as quantity_foil,
+                           coalesce(faceName,card.name)         as name,
+                           set.name                             as setname
+                      FROM card
+                INNER JOIN set ON (set.code = card.setcode)
+                 LEFT JOIN owned_card ON (owned_card.card_uuid = card.uuid AND owned_card.system_user_id = {$user_id})
+                     WHERE card.isOnlineOnly = 'f'
+                       AND originalname = '{$name}'
+                       AND card.setcode ilike '%{$setCode}%'
+                       ORDER BY set.releasedate asc
+                   ";
         }
 
         //Open transaction and fetch the results
@@ -200,22 +320,22 @@ class Card extends TRecord
         {
             $card = new Card;
             $card->fromArray($result);
-            $card->name         = $card->faceName ?? $card->name;
-            $card->originalName = $card->name;
-            if ($translate)
-            {
-                $card->translateByName($card->name);
-            }
+            $card->id            = $card->uuid;
+            $card->quantity      = $result["quantity"];
+            $card->quantity_foil = $result["quantity_foil"];
+            $card->image         = self::getImage($card->multiverseid,$card->scryfallid,$card->side);
+            $card->setname       = $result["setname"];
+            $card->keyrunecode   = strtolower($result["keyrunecode"]);
+            $card->getDescription();
             array_push($objects,$card);
         }
 
         return $objects;
-
     }
 
     public static function getImage($multiverseId,$scryFallId,$side)
     {
-        if ($multiverseId && false)
+        if ($multiverseId)
         {
             $url = "https://gatherer.wizards.com/Handlers/Image.ashx?type=card&multiverseid={$multiverseId}";
         } else
@@ -233,132 +353,9 @@ class Card extends TRecord
         return $url;
     }
 
-    public static function getImageByName($name,$id = null)
-    {
-        if ($id)
-        {
-            $imgURL = "https://gatherer.wizards.com/Handlers/Image.ashx?type=card&multiverseid={$id}";
-        }
-        else
-        {
-            // Removes the " symbol
-            // Some cards have this on the name and it breaks the sql statement
-            $name = str_replace("\"","",$name);
-
-            //Query the oldest set that has this card and get the images ID
-            $sql = "SELECT multiverseId, scryfallId, side
-                    FROM cards a, sets b
-                    WHERE coalesce(a.faceName,a.name) LIKE \"%{$name}%\"
-                      AND a.setCode = b.code
-                      AND (multiverseId IS NOT NULL OR scryfallId IS NOT NULL)
-                    ORDER BY b.releaseDate LIMIT 1";
-
-            //Default image, if theres none in the image bank
-            $imgURL = "https://gatherer.wizards.com/Handlers/Image.ashx?type=card&multiverseid=32066";
-
-            try
-            {
-                //Open transaction and fetch the results
-                TTransaction::open(self::DATABASE);
-                $conn = TTransaction::get();
-                $sth = $conn->prepare($sql);
-                $sth->execute();
-                $result = $sth->fetchAll();
-
-                if ($result[0])
-                {
-                    $multiverseId = $result[0]['multiverseId'];
-                    $scryFallId   = $result[0]['scryfallId'];
-                    $side         = $result[0]['side'];
-                }
-
-                TTransaction::close();
-
-                //Use the image from Wizards, if theres a code
-                if ($multiverseId)
-                {
-                    $imgURL = "https://gatherer.wizards.com/Handlers/Image.ashx?type=card&multiverseid={$multiverseId}";
-                }
-                else if ($scryFallId)
-                {
-                    $imgURL = "https://api.scryfall.com/cards/{$scryFallId}?format=image";
-                    if ($side == 'a') {
-                        $imgURL .= '&face=front';
-                    }
-                    else if($side == 'b')
-                    {
-                        $imgURL .= '&face=back';
-                    }
-                }
-
-            }
-            catch (Exception $e)
-            {
-                // undo all pending operations
-                TTransaction::rollback();
-            }
-        }
-
-        return $imgURL;
-    }
-
-    public function translate()
-    {
-        $this->rarity_t = _t(ucfirst($this->rarity));
-        if(empty($this->isTranslated) && (ApplicationTranslator::getLanguage() == 'pt'))
-        {
-            $language = 'Portuguese (Brazil)';
-            $criteria = new TCriteria();
-            $criteria->add(new TFilter('uuid','=',$this->uuid));
-            $criteria->add(new TFilter('language','like',$language));
-
-            $translations = ForeignData::getObjects($criteria);
-
-            foreach ($translations as $translation)
-            {
-                $this->name           = empty($translation->name)         ? $this->name           : $translation->name;
-                $this->text           = empty($translation->text)         ? $this->text           : $translation->text;
-                $this->flavorText     = empty($translation->flavorText)   ? $this->flavorText     : $translation->flavorText;
-                $this->type           = empty($translation->type)         ? $this->type           : $translation->type;
-                $this->multiverseId_t = empty($translation->multiverseid) ? $this->multiverseId_t : $translation->multiverseid;
-
-                $this->isTranslated = true;
-            }
-        }
-    }
-
-    public function translateByName($name)
-    {
-        $this->rarity_t = _t(ucfirst($this->rarity));
-        if(empty($this->isTranslated) && (ApplicationTranslator::getLanguage() == 'pt'))
-        {
-            // Removes the " symbol
-            // Some cards have this on the name and it breaks the sql statement
-            $name = str_replace("\"","",$name);
-            $language = 'Portuguese (Brazil)';
-
-            $criteria = new TCriteria();
-            $criteria->add(new TFilter('uuid','in',"(SELECT uuid FROM cards WHERE COALESCE(faceName,name) like \"{$name}\")"));
-            $criteria->add(new TFilter('language','like',$language));
-
-            $translations = ForeignData::getObjects($criteria);
-
-            foreach ($translations as $translation)
-            {
-                $this->name           = empty($translation->name)         ? $this->name           : $translation->name;
-                $this->text           = empty($translation->text)         ? $this->text           : $translation->text;
-                $this->flavorText     = empty($translation->flavorText)   ? $this->flavorText     : $translation->flavorText;
-                $this->type           = empty($translation->type)         ? $this->type           : $translation->type;
-                $this->multiverseId_t = empty($translation->multiverseid) ? $this->multiverseId_t : $translation->multiverseid;
-
-                $this->isTranslated = true;
-            }
-        }
-    }
-
     public function getDescription()
     {
-        $description = "{$this->name} {$this->manaCost} (".str_replace('.0','',$this->convertedManaCost).") <br>
+        $description = "{$this->name} {$this->manacost} (".str_replace('.00','',$this->convertedmanacost).") <br>
                         {$this->type} <br>".str_replace("\n","</br>",$this->text);
         $this->description = self::putSymbols($description);
     }
@@ -381,11 +378,23 @@ class Card extends TRecord
         return $text;
     }
 
-    public static function countCardsByName($name)
+    public static function countCardsByName($name,$setCode)
     {
+        $name    = str_replace("\"","",$name);
+        $name    = str_replace("'","''",$name);
+        $setCode = str_replace("\"","",$setCode);
+
         TTransaction::open(self::DATABASE);
         $conn = TTransaction::get();
-        $sql = "SELECT count(*) AS \"count\" FROM cards WHERE name = \"{$name}\" AND isOnlineOnly = 0";
+        $sql = "SELECT count(a.*) AS \"count\"
+                  FROM (
+                      SELECT name
+                      FROM card
+                      WHERE isOnlineOnly = 'f'
+                        AND (allNames ->> 'names' ilike '%{$name}%' OR coalesce(faceName,name) ilike '%{$name}%')
+                        AND printings ->> 'printings' ilike '%{$setCode}%'
+                      GROUP BY name
+                  ) as a";
         $sth = $conn->prepare($sql);
         $sth->execute();
         $result = $sth->fetchAll();
@@ -393,35 +402,7 @@ class Card extends TRecord
         return $result[0]['count'];
     }
 
-    public function getSet()
-    {
-        $criteria = new TCriteria();
-        $criteria->add(new TFilter('code','=',$this->setCode));
-
-        $sets = Set::getObjects($criteria);
-        $set  = $sets[0];
-        $set->keyruneCode = strtolower($set->keyruneCode);
-        return $set;
-    }
-
     public static function str_contains($haystack, $needle) {
         return $needle !== '' && mb_strpos($haystack, $needle) !== false;
-    }
-
-    public function getQuantityOwned()
-    {
-        TTransaction::open('mtg_tracker');
-        $criteria = new TCriteria();
-        $criteria->add(new TFilter('card_uuid','=',$this->uuid));
-        $criteria->add(new TFilter('system_user_id','=',TSession::getValue('userid')));
-        $owned = OwnedCard::getObjects($criteria);
-        TTransaction::close();
-
-        $quantity = 0;
-        if ($owned) {
-            $quantity = $owned['0']->quantity;
-        }
-
-        return $quantity;
     }
 }

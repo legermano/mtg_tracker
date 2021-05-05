@@ -9,14 +9,17 @@
  * @copyright  Copyright (c) 2006 Adianti Solutions Ltd. (http://www.adianti.com.br)
  * @license    http://www.adianti.com.br/framework-license
  */
+
+ use Adianti\Database\TRecord;
+
 class SystemUser extends TRecord
 {
     const TABLENAME = 'system_user';
     const PRIMARYKEY= 'id';
     const IDPOLICY =  'max'; // {max, serial}
-    
+
     // use SystemChangeLogTrait;
-    
+
     private $frontpage;
     private $unit;
     private $system_user_groups = array();
@@ -37,7 +40,7 @@ class SystemUser extends TRecord
         parent::addAttribute('system_unit_id');
         parent::addAttribute('active');
     }
-    
+
     /**
      * Clone the entire object and related ones
      */
@@ -46,11 +49,11 @@ class SystemUser extends TRecord
         $groups   = $this->getSystemUserGroups();
         $units    = $this->getSystemUserUnits();
         $programs = $this->getSystemUserPrograms();
-        
+
         unset($this->id);
         $this->name .= ' (clone)';
         $this->store();
-        
+
         if ($groups)
         {
             foreach ($groups as $group)
@@ -58,7 +61,7 @@ class SystemUser extends TRecord
                 $this->addSystemUserGroup( $group );
             }
         }
-        
+
         if ($units)
         {
             foreach ($units as $unit)
@@ -66,7 +69,7 @@ class SystemUser extends TRecord
                 $this->addSystemUserUnit( $unit );
             }
         }
-        
+
         if ($programs)
         {
             foreach ($programs as $program)
@@ -75,7 +78,7 @@ class SystemUser extends TRecord
             }
         }
     }
-    
+
     /**
      * Returns the frontpage name
      */
@@ -84,11 +87,11 @@ class SystemUser extends TRecord
         // loads the associated object
         if (empty($this->frontpage))
             $this->frontpage = new SystemProgram($this->frontpage_id);
-    
+
         // returns the associated object
         return $this->frontpage->name;
     }
-    
+
     /**
      * Returns the frontpage
      */
@@ -97,11 +100,11 @@ class SystemUser extends TRecord
         // loads the associated object
         if (empty($this->frontpage))
             $this->frontpage = new SystemProgram($this->frontpage_id);
-    
+
         // returns the associated object
         return $this->frontpage;
     }
-    
+
    /**
      * Returns the unit
      */
@@ -110,11 +113,11 @@ class SystemUser extends TRecord
         // loads the associated object
         if (empty($this->unit))
             $this->unit = new SystemUnit($this->system_unit_id);
-    
+
         // returns the associated object
         return $this->unit;
     }
-    
+
     /**
      * Add a Group to the user
      * @param $object Instance of SystemGroup
@@ -126,7 +129,7 @@ class SystemUser extends TRecord
         $object->system_user_id = $this->id;
         $object->store();
     }
-    
+
     /**
      * Add a Unit to the user
      * @param $object Instance of SystemUnit
@@ -138,7 +141,7 @@ class SystemUser extends TRecord
         $object->system_user_id = $this->id;
         $object->store();
     }
-    
+
     /**
      * Return the user' group's
      * @return Collection of SystemGroup
@@ -147,7 +150,7 @@ class SystemUser extends TRecord
     {
         return parent::loadAggregate('SystemGroup', 'SystemUserGroup', 'system_user_id', 'system_group_id', $this->id);
     }
-    
+
     /**
      * Return the user' unit's
      * @return Collection of SystemUnit
@@ -156,7 +159,7 @@ class SystemUser extends TRecord
     {
         return parent::loadAggregate('SystemUnit', 'SystemUserUnit', 'system_user_id', 'system_unit_id', $this->id);
     }
-    
+
     /**
      * Add a program to the user
      * @param $object Instance of SystemProgram
@@ -168,7 +171,7 @@ class SystemUser extends TRecord
         $object->system_user_id = $this->id;
         $object->store();
     }
-    
+
     /**
      * Return the user' program's
      * @return Collection of SystemProgram
@@ -177,7 +180,7 @@ class SystemUser extends TRecord
     {
         return parent::loadAggregate('SystemProgram', 'SystemUserProgram', 'system_user_id', 'system_program_id', $this->id);
     }
-    
+
     /**
      * Get user group ids
      */
@@ -192,15 +195,15 @@ class SystemUser extends TRecord
                 $groupids[] = $group->id;
             }
         }
-        
+
         if ($as_string)
         {
             return implode(',', $groupids);
         }
-        
+
         return $groupids;
     }
-    
+
     /**
      * Get user unit ids
      */
@@ -215,15 +218,15 @@ class SystemUser extends TRecord
                 $unitids[] = $unit->id;
             }
         }
-        
+
         if ($as_string)
         {
             return implode(',', $unitids);
         }
-        
+
         return $unitids;
     }
-    
+
     /**
      * Get user group names
      */
@@ -238,10 +241,10 @@ class SystemUser extends TRecord
                 $groupnames[] = $group->name;
             }
         }
-        
+
         return implode(',', $groupnames);
     }
-    
+
     /**
      * Reset aggregates
      */
@@ -251,7 +254,7 @@ class SystemUser extends TRecord
         SystemUserUnit::where('system_user_id', '=', $this->id)->delete();
         SystemUserProgram::where('system_user_id', '=', $this->id)->delete();
     }
-    
+
     /**
      * Delete the object and its aggregates
      * @param $id object ID
@@ -260,15 +263,15 @@ class SystemUser extends TRecord
     {
         // delete the related System_userSystem_user_group objects
         $id = isset($id) ? $id : $this->id;
-        
+
         SystemUserGroup::where('system_user_id', '=', $id)->delete();
         SystemUserUnit::where('system_user_id', '=', $id)->delete();
         SystemUserProgram::where('system_user_id', '=', $id)->delete();
-        
+
         // delete the object itself
         parent::delete($id);
     }
-    
+
     /**
      * Validate user login
      * @param $login String with user login
@@ -276,7 +279,7 @@ class SystemUser extends TRecord
     public static function validate($login)
     {
         $user = self::newFromLogin($login);
-        
+
         if ($user instanceof SystemUser)
         {
             if ($user->active == 'N')
@@ -288,10 +291,10 @@ class SystemUser extends TRecord
         {
             throw new Exception(_t('User not found'));
         }
-        
+
         return $user;
     }
-    
+
     /**
      * Authenticate the user
      * @param $login String with user login
@@ -305,10 +308,10 @@ class SystemUser extends TRecord
         {
             throw new Exception(_t('Wrong password'));
         }
-        
+
         return $user;
     }
-    
+
     /**
      * Returns a SystemUser object based on its login
      * @param $login String with user login
@@ -317,7 +320,7 @@ class SystemUser extends TRecord
     {
         return SystemUser::where('login', '=', $login)->first();
     }
-    
+
     /**
      * Returns a SystemUser object based on its e-mail
      * @param $email String with user email
@@ -326,14 +329,14 @@ class SystemUser extends TRecord
     {
         return SystemUser::where('email', '=', $email)->first();
     }
-    
+
     /**
      * Return the programs the user has permission to run
      */
     public function getPrograms()
     {
         $programs = array();
-        
+
         foreach( $this->getSystemUserGroups() as $group )
         {
             foreach( $group->getSystemPrograms() as $prog )
@@ -341,22 +344,22 @@ class SystemUser extends TRecord
                 $programs[$prog->controller] = true;
             }
         }
-                
+
         foreach( $this->getSystemUserPrograms() as $prog )
         {
             $programs[$prog->controller] = true;
         }
-        
+
         return $programs;
     }
-    
+
     /**
      * Return the programs the user has permission to run
      */
     public function getProgramsList()
     {
         $programs = array();
-        
+
         foreach( $this->getSystemUserGroups() as $group )
         {
             foreach( $group->getSystemPrograms() as $prog )
@@ -364,16 +367,16 @@ class SystemUser extends TRecord
                 $programs[$prog->controller] = $prog->name;
             }
         }
-                
+
         foreach( $this->getSystemUserPrograms() as $prog )
         {
             $programs[$prog->controller] = $prog->name;
         }
-        
+
         asort($programs);
         return $programs;
     }
-    
+
     /**
      * Check if the user is within a group
      */
@@ -384,10 +387,10 @@ class SystemUser extends TRecord
         {
             $user_groups[] = $user_group->id;
         }
-    
+
         return in_array($group->id, $user_groups);
     }
-    
+
     /**
      *
      */

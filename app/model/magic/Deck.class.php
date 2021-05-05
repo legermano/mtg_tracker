@@ -1,9 +1,17 @@
 <?
+
+use Adianti\Database\TCriteria;
+use Adianti\Database\TFilter;
+use Adianti\Database\TRecord;
+use Adianti\Database\TRepository;
+
 class Deck extends TRecord
 {
     const TABLENAME  = 'deck';
     const PRIMARYKEY = 'id';
-    const IDPOLICY   = 'max';    
+    const IDPOLICY   = 'max';
+
+    use SystemChangeLogTrait;
 
     /**
      * Construct method
@@ -26,7 +34,7 @@ class Deck extends TRecord
     public function get_format()
     {
         //loads the associated object
-        if (empty($this->format)) 
+        if (empty($this->format))
         {
             $this->format = new Format($this->format_id);
         }
@@ -41,7 +49,7 @@ class Deck extends TRecord
     public function get_format_name()
     {
         //loads the associated object
-        if (empty($this->format)) 
+        if (empty($this->format))
         {
             $this->format = new Format($this->format_id);
         }
@@ -56,7 +64,7 @@ class Deck extends TRecord
     public function get_user()
     {
         //loads the associated object
-        if (empty($this->user)) 
+        if (empty($this->user))
         {
             $this->user = new SystemUser($this->system_user_id);
         }
@@ -71,11 +79,11 @@ class Deck extends TRecord
     public function getAllCards()
     {
         $criteria = new TCriteria;
-        $criteria->add(new TFilter('deck_id','=',$this->$id));
+        $criteria->add(new TFilter('deck_id','=',$this->id));
 
         $repository = new TRepository('DeckCard');
         $cards = $repository->load($criteria);
-        
+
         return $cards;
     }
 }

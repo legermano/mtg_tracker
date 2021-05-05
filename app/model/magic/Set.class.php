@@ -1,32 +1,31 @@
 <?php
+use Adianti\Database\TRecord;
 class Set extends TRecord
 {
-    const TABLENAME = 'sets';
-    const PRIMARYKEY= 'id';
+    const TABLENAME = 'set';
+    const PRIMARYKEY= 'code';
     const IDPOLICY =  'max';
 
     public function __construct($id = null)
     {
         parent::__construct($id);
-        parent::addAttribute('baseSetSize');
+        parent::addAttribute('basesetsize');
         parent::addAttribute('block');
-        parent::addAttribute('booster');
-        parent::addAttribute('code');
-        parent::addAttribute('isFoilOnly');
-        parent::addAttribute('isForeignOnly');
-        parent::addAttribute('isNonFoilOnly');
-        parent::addAttribute('isOnlineOnly');
-        parent::addAttribute('isPartialPreview');
-        parent::addAttribute('keyruneCode');
-        parent::addAttribute('mcmId');
-        parent::addAttribute('mcmIdExtras');
-        parent::addAttribute('mcmName');
-        parent::addAttribute('mtgoCode');
+        parent::addAttribute('isfoilonly');
+        parent::addAttribute('isforeignonly');
+        parent::addAttribute('isnonfoilonly');
+        parent::addAttribute('isonlineonly');
+        parent::addAttribute('ispartialpreview');
+        parent::addAttribute('keyrunecode');
+        parent::addAttribute('mcmid');
+        parent::addAttribute('mcmidextras');
+        parent::addAttribute('mcmname');
+        parent::addAttribute('mtgocode');
         parent::addAttribute('name');
-        parent::addAttribute('parentCode');
-        parent::addAttribute('releaseDate');
-        parent::addAttribute('tcgplayerGroupId');
-        parent::addAttribute('totalSetSize');
+        parent::addAttribute('parentcode');
+        parent::addAttribute('releasedate');
+        parent::addAttribute('tcgplayergroupid');
+        parent::addAttribute('totalsetsize');
         parent::addAttribute('type');
     }
 }
