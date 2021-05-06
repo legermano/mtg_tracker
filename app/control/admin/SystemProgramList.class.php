@@ -51,9 +51,6 @@ class SystemProgramList extends TStandardList
 
         // keep the form filled during navigation with session data
         $this->form->setData( TSession::getValue('SystemProgram_filter_data') );
-        echo "<pre>";
-        print_r(TSession::getValue('SystemProgram_filter_data'));
-        echo "</pre>";
 
         // add the search form actions
         $btn = $this->form->addAction(_t('Find'), new TAction(array($this, 'onSearch')), 'fa:search');

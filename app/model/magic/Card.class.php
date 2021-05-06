@@ -292,11 +292,12 @@ class Card extends TRecord
         {
             $sql = "SELECT manaCost, convertedManaCost, side, scryFallId, uuid,
                            originalname, setcode, loyalty, rarity, artist, prices,
-                           flavortext,multiverseid,text,card.type, keyrunecode, legalities
+                           flavortext,multiverseid,text,card.type, keyrunecode,
                            coalesce(owned_card.quantity,0)      as quantity,
                            coalesce(owned_card.quantity_foil,0) as quantity_foil,
                            coalesce(faceName,card.name)         as name,
-                           set.name                             as setname
+                           set.name                             as setname,
+                           (legalities ->> 'legalities')        as legalities
                       FROM card
                 INNER JOIN set ON (set.code = card.setcode)
                  LEFT JOIN owned_card ON (owned_card.card_uuid = card.uuid AND owned_card.system_user_id = {$user_id})
@@ -326,6 +327,65 @@ class Card extends TRecord
             $card->image         = self::getImage($card->multiverseid,$card->scryfallid,$card->side);
             $card->setname       = $result["setname"];
             $card->keyrunecode   = strtolower($result["keyrunecode"]);
+            $card->getDescription();
+            array_push($objects,$card);
+        }
+
+        return $objects;
+    }
+
+    public static function getCardsBySet($setCode)
+    {
+        if (ApplicationTranslator::getLanguage() == 'pt')
+        {
+            $sql = "SELECT split_part(coalesce(string_agg(distinct(nameptbr),'@'),coalesce(faceName,card.name)),'@',1)                   as t_name,
+                           split_part(coalesce(string_agg(distinct(multiverseIdptbr),'@'),string_agg(distinct(multiverseId),'@')),'@',1) as t_multiverseId,
+                           split_part(string_agg(distinct(scryFallId),'@'),'@',1)                                                        as t_scryFallId,
+                           split_part(string_agg(distinct(side),'@'),'@',1)                                                              as t_side,
+                           split_part(string_agg(distinct(originalName),'@'),'@',1)                                                      as t_originalName,
+                           split_part(string_agg(distinct(setcode),'@'),'@',1)                                                           as t_setcode
+                      FROM card
+                INNER JOIN set ON (set.code = card.setcode)
+                     WHERE card.setcode = '{$setCode}'
+                     GROUP BY card.name, faceName
+                     ORDER BY t_name
+                   ";
+        }
+        else
+        {
+            $sql = "SELECT split_part(coalesce(faceName,card.name),'@',1)           as t_name,
+                           split_part(string_agg(distinct(multiverseId),'@'),'@',1) as t_multiverseId,
+                           split_part(string_agg(distinct(scryFallId),'@'),'@',1)   as t_scryFallId,
+                           split_part(string_agg(distinct(side),'@'),'@',1)         as t_side,
+                           split_part(string_agg(distinct(originalName),'@'),'@',1) as t_originalName,
+                           split_part(string_agg(distinct(setcode),'@'),'@',1)      as t_setcode
+                      FROM card
+                INNER JOIN set ON (set.code = card.setcode)
+                     WHERE card.setcode = '{$setCode}'
+                     GROUP BY card.name, faceName
+                     ORDER BY t_name
+                   ";
+        }
+
+        $sql = "SELECT c.t_name as name, c.t_multiverseId as multiverseid, c.t_setcode as setcode,
+                       c.t_scryFallId as scryfallid, c.t_side as side, c.t_originalName as originalname
+                  FROM (
+               ".$sql." ) as c";
+
+        //Open transaction and fetch the results
+        TTransaction::open(self::DATABASE);
+        $conn = TTransaction::get();
+        $sth = $conn->prepare($sql);
+        $sth->execute();
+        $results = $sth->fetchAll();
+        TTransaction::close();
+
+        $objects = array();
+        foreach ($results as $result)
+        {
+            $card = new Card;
+            $card->fromArray($result);
+            $card->image         = self::getImage($card->multiverseid,$card->scryfallid,$card->side);
             $card->getDescription();
             array_push($objects,$card);
         }

@@ -3,11 +3,13 @@
 use Adianti\Base\TStandardForm;
 use Adianti\Control\TAction;
 use Adianti\Database\TTransaction;
+use Adianti\Widget\Container\TPanelGroup;
 use Adianti\Widget\Container\TVBox;
 use Adianti\Widget\Dialog\TMessage;
 use Adianti\Widget\Form\TEntry;
 use Adianti\Widget\Form\TLabel;
 use Adianti\Widget\Form\TRadioGroup;
+use Adianti\Widget\Util\TCardView;
 use Adianti\Widget\Util\TXMLBreadCrumb;
 use Adianti\Wrapper\BootstrapFormBuilder;
 
@@ -58,12 +60,29 @@ class SetForm extends TStandardForm
         $date->setSize('20%');
         $online->setSize('100%');
 
+        //Cards of the set
+        $input_search = new TEntry('input_search');
+        $input_search->placeholder = _t('Search');
+        $input_search->setSize('100%');
+
+        $open_action = new TAction(['CardForm', 'onEdit'], ['originalname' => '{originalname}','setcode' => '{setcode}','returnLink' => 'SetForm']);
+
+        $this->cards = new TCardView;
+        $this->cards->setContentHeight(170);
+        $this->cards->setTitleAttribute('{name}');
+        $this->cards->enableSearch($input_search,'name' );
+        $this->cards->setItemTemplate('<div style="display: flex; justify-content: center;"><img style="height:250px;float:right;margin:5px" src="{image}"></div>');
+        $this->cards->addAction($open_action, _t('View'), 'fa:search blue');
+
+
         $this->form->addActionLink(_t('Back'), new TAction(array('SetList','onReload')),'far:arrow-alt-circle-left blue');
 
         $container = new TVBox;
         $container->style = 'width: 100%';
         $container->add(new TXMLBreadCrumb('menu.xml','FormatList'));
         $container->add($this->form);
+        $container->add( $input_search )->style = 'float:right;width:50%;display:block;background:white;margin-bottom:10px;';
+        $container->add(TPanelGroup::pack(_t('Cards'), $this->cards)); // add a row for page navigation
 
         //Add the container to the page
         parent::add($container);
@@ -95,6 +114,13 @@ class SetForm extends TStandardForm
                 else
                 {
                     $object->releasedate = $date->format('Y-m-d');
+                }
+
+                $cards = Card::getCardsBySet($object->code);
+
+                foreach ($cards as $card) {
+                    $card->uniqid = uniqid();
+                    $this->cards->addItem($card);
                 }
 
                 $this->form->setData($object);

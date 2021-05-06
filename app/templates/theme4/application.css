@@ -150,7 +150,7 @@ ul.navbar-top-links .open>a, ul.navbar-top-links .open>a:hover, ul.navbar-top-li
     min-width: 0;
     word-wrap: break-word;
     border: 1px solid rgba(0,0,0,.125);
-    
+
 }
 
 .panel-heading{
@@ -441,6 +441,8 @@ table.table[widget="tchecklist"]>tbody>tr>td:first-child
 .card-item
 {
     border-radius: 3px;
+    margin: 2px !important;
+    margin-bottom: 8px !important;
 }
 
 .card-header {
@@ -574,9 +576,9 @@ section.content
   .navbar >  .navbar-brand,
   .navbar >  .navbar-brand {
     margin-left: 35px;
-    width: calc(100% - 120px); 
+    width: calc(100% - 120px);
     }
-    
+
     .navbar>.fa-columns {
         display: none;
     }

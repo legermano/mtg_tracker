@@ -245,7 +245,15 @@ class CardForm extends TStandardForm
         TTransaction::close();
 
         $btnBack = new TButton('back');
-        $btnBack->setAction(new TAction(array('CardList','onReload')),_t('Back'));
+        //Workaround to get back to the rigth page
+        if (array_key_exists('returnLink', $param))
+        {
+            $btnBack->setAction(new TAction(array($param['returnLink'],'onEdit'),array('key' => $param['setcode'])),_t('Back'));
+        }
+        else
+        {
+            $btnBack->setAction(new TAction(array('CardList','onReload')),_t('Back'));
+        }
         $btnBack->setImage('far:arrow-alt-circle-left blue');
         $buttonsArray[] = $btnBack;
 
