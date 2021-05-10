@@ -3,7 +3,6 @@ CREATE TABLE card
     uuid TEXT PRIMARY KEY NOT NULL,
     allNames JSONB,
     artist TEXT,
-    asciiName TEXT,
     availability JSONB,
     borderColor TEXT,
     cardKingdomFoilId TEXT,

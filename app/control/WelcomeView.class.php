@@ -1,4 +1,9 @@
 <?php
+
+use Adianti\Control\TPage;
+use Adianti\Registry\TSession;
+use Adianti\Widget\Base\TElement;
+
 /**
  * WelcomeView
  *
@@ -17,29 +22,14 @@ class WelcomeView extends TPage
     function __construct()
     {
         parent::__construct();
-        
-        $html1 = new THtmlRenderer('app/resources/system_welcome_en.html');
-        $html2 = new THtmlRenderer('app/resources/system_welcome_pt.html');
-        $html3 = new THtmlRenderer('app/resources/system_welcome_es.html');
 
-        // replace the main section variables
-        $html1->enableSection('main', array());
-        $html2->enableSection('main', array());
-        $html3->enableSection('main', array());
-        
-        $panel1 = new TPanelGroup('Welcome!');
-        $panel1->add($html1);
-        
-        $panel2 = new TPanelGroup('Bem-vindo!');
-        $panel2->add($html2);
-		
-        $panel3 = new TPanelGroup('Bienvenido!');
-        $panel3->add($html3);
-        
-        $vbox = TVBox::pack($panel1, $panel2, $panel3);
-        $vbox->style = 'display:block; width: 100%';
-        
-        // add the template to the page
-        parent::add( $vbox );
+        $div = new TElement('div');
+        $div->class = 'row';
+
+        $div->add( $g1 = new OwnedPercentageBySet(TSession::getValue('userid')) );
+
+        $g1->class = 'col-sm-12';
+
+        parent::add($div);
     }
 }

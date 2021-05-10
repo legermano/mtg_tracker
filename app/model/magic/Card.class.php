@@ -81,7 +81,6 @@ class Card extends TRecord
         parent::__construct($id);
         parent::addAttribute('allNames');
         parent::addAttribute('artist');
-        parent::addAttribute('asciiName');
         parent::addAttribute('availability');
         parent::addAttribute('bordercolor');
         parent::addAttribute('cardKingdomfoilid');
@@ -175,31 +174,31 @@ class Card extends TRecord
         // Needs to run a different query to order by name correctly
         if (ApplicationTranslator::getLanguage() == 'pt')
         {
-            $sql = "SELECT manaCost, convertedManaCost,
-                           split_part(coalesce(string_agg(distinct(nameptbr),'@'),coalesce(faceName,name)),'@',1)                        as t_name,
-                           split_part(coalesce(string_agg(distinct(flavorTextptbr),'@'),string_agg(distinct(flavorText),'@')),'@',1)     as t_flavorText,
-                           split_part(coalesce(string_agg(distinct(multiverseIdptbr),'@'),string_agg(distinct(multiverseId),'@')),'@',1) as t_multiverseId,
+            $sql = "SELECT manacost, convertedmanacost,
+                           split_part(coalesce(string_agg(distinct(nameptbr),'@'),coalesce(facename,name)),'@',1)                        as t_name,
+                           split_part(coalesce(string_agg(distinct(flavortextptbr),'@'),string_agg(distinct(flavortext),'@')),'@',1)     as t_flavortext,
+                           split_part(coalesce(string_agg(distinct(multiverseidptbr),'@'),string_agg(distinct(multiverseid),'@')),'@',1) as t_multiverseid,
                            split_part(coalesce(string_agg(distinct(textptbr),'@'),string_agg(distinct(text),'@')),'@',1)                 as t_text,
                            split_part(coalesce(string_agg(distinct(typeptbr),'@'),string_agg(distinct(type),'@')),'@',1)                 as t_type,
                            split_part(string_agg(distinct(side),'@'),'@',1)                                                              as t_side,
-                           split_part(string_agg(distinct(scryFallId),'@'),'@',1)                                                        as t_scryFallId,
+                           split_part(string_agg(distinct(scryfallid),'@'),'@',1)                                                        as t_scryfallid,
                            split_part(string_agg(distinct(uuid),'@'),'@',1)                                                              as t_uuid,
-                           split_part(string_agg(distinct(originalName),'@'),'@',1)                                                      as t_originalName
+                           split_part(string_agg(distinct(originalname),'@'),'@',1)                                                      as t_originalname
                       FROM card
                    ";
         }
         else
         {
-            $sql = "SELECT manaCost, convertedManaCost,
-                           split_part(coalesce(faceName,name),'@',1)                as t_name,
-                           split_part(string_agg(distinct(flavorText),'@'),'@',1)   as t_flavorText,
-                           split_part(string_agg(distinct(multiverseId),'@'),'@',1) as t_multiverseId,
+            $sql = "SELECT manacost, convertedmanacost,
+                           split_part(coalesce(facename,name),'@',1)                as t_name,
+                           split_part(string_agg(distinct(flavortext),'@'),'@',1)   as t_flavortext,
+                           split_part(string_agg(distinct(multiverseid),'@'),'@',1) as t_multiverseid,
                            split_part(string_agg(distinct(text),'@'),'@',1)         as t_text,
                            split_part(string_agg(distinct(type),'@'),'@',1)         as t_type,
                            split_part(string_agg(distinct(side),'@'),'@',1)         as t_side,
-                           split_part(string_agg(distinct(scryFallId),'@'),'@',1)   as t_scryFallId,
+                           split_part(string_agg(distinct(scryfallid),'@'),'@',1)   as t_scryfallid,
                            split_part(string_agg(distinct(uuid),'@'),'@',1)         as t_uuid,
-                           split_part(string_agg(distinct(originalName),'@'),'@',1) as t_originalName
+                           split_part(string_agg(distinct(originalname),'@'),'@',1) as t_originalname
                       FROM card
                    ";
         }
@@ -214,21 +213,21 @@ class Card extends TRecord
                     ";
         }
 
-        $sql .= "WHERE isOnlineOnly = 'f'
-                   AND (allNames ->> 'names' ilike '%{$name}%' OR coalesce(faceName,name) ilike '%{$name}%')
-                   AND setCode ilike '%{$setCode}%' ".
+        $sql .= "WHERE isonlineonly = 'f'
+                   AND (allnames ->> 'names' ilike '%{$name}%' OR coalesce(facename,name) ilike '%{$name}%')
+                   AND setcode ilike '%{$setCode}%' ".
                 (empty($format) ? "" : "AND (legalities ->> 'legalities' ilike '%{$format}%')") .
-                "GROUP BY name, faceName, manaCost, convertedManaCost
+                "GROUP BY name, facename, manacost, convertedmanacost
                  ORDER BY t_name
                  LIMIT {$limit}
                  OFFSET {$offset}
                 ";
 
 
-        $sql = "SELECT c.manaCost as manacost, c.convertedManaCost as convertedmanacost,
-                       c.t_name as name, c.t_flavorText as flavortext, c.t_multiverseId as multiverseid,
-                       c.t_text as text, c.t_type as type, c.t_side as side, c.t_scryFallId as scryfallid,
-                       c.t_uuid as uuid, c.t_originalName as originalname
+        $sql = "SELECT c.manacost as manacost, c.convertedmanacost as convertedmanacost,
+                       c.t_name as name, c.t_flavortext as flavortext, c.t_multiverseid as multiverseid,
+                       c.t_text as text, c.t_type as type, c.t_side as side, c.t_scryfallid as scryfallid,
+                       c.t_uuid as uuid, c.t_originalname as originalname
                   FROM (
                ".$sql." ) as c";
 
@@ -267,9 +266,9 @@ class Card extends TRecord
 
         if (ApplicationTranslator::getLanguage() == 'pt')
         {
-            $sql = "SELECT manaCost, convertedManaCost, side, scryFallId, uuid,
-                           originalname, setcode, loyalty, rarity, artist, prices,
-                           keyrunecode,
+            $sql = "SELECT manaCost, convertedManaCost, side, scryfallId, uuid,
+                           originalName, setCode, loyalty, rarity, artist, prices,
+                           keyruneCode,
                            coalesce(owned_card.quantity,0)                 as quantity,
                            coalesce(owned_card.quantity_foil,0)            as quantity_foil,
                            coalesce(nameptbr,coalesce(faceName,card.name)) as name,
@@ -278,14 +277,15 @@ class Card extends TRecord
                            coalesce(textptbr,text)                         as text,
                            coalesce(typeptbr,card.type)                    as type,
                            set.name                                        as setname,
-                           (legalities ->> 'legalities')                   as legalities
+                           (legalities ->> 'legalities')                   as legalities,
+                           card.number                                     as number
                       FROM card
-                INNER JOIN set ON (set.code = card.setcode)
+                INNER JOIN set ON (set.code = card.setCode)
                  LEFT JOIN owned_card ON (owned_card.card_uuid = card.uuid AND owned_card.system_user_id = {$user_id})
                      WHERE card.isOnlineOnly = 'f'
-                       AND originalname = '{$name}'
-                       AND card.setcode ilike '%{$setCode}%'
-                     ORDER BY set.releasedate asc
+                       AND originalName = '{$name}'
+                       AND card.setCode ilike '%{$setCode}%'
+                     ORDER BY set.releaseDate asc,card.number::INTEGER asc
                    ";
         }
         else
@@ -297,14 +297,15 @@ class Card extends TRecord
                            coalesce(owned_card.quantity_foil,0) as quantity_foil,
                            coalesce(faceName,card.name)         as name,
                            set.name                             as setname,
-                           (legalities ->> 'legalities')        as legalities
+                           (legalities ->> 'legalities')        as legalities,
+                           card.number                          as number
                       FROM card
                 INNER JOIN set ON (set.code = card.setcode)
                  LEFT JOIN owned_card ON (owned_card.card_uuid = card.uuid AND owned_card.system_user_id = {$user_id})
                      WHERE card.isOnlineOnly = 'f'
                        AND originalname = '{$name}'
                        AND card.setcode ilike '%{$setCode}%'
-                       ORDER BY set.releasedate asc
+                       ORDER BY set.releasedate asc,card.number::INTEGER asc
                    ";
         }
 
@@ -343,11 +344,12 @@ class Card extends TRecord
                            split_part(string_agg(distinct(scryFallId),'@'),'@',1)                                                        as t_scryFallId,
                            split_part(string_agg(distinct(side),'@'),'@',1)                                                              as t_side,
                            split_part(string_agg(distinct(originalName),'@'),'@',1)                                                      as t_originalName,
-                           split_part(string_agg(distinct(setcode),'@'),'@',1)                                                           as t_setcode
+                           split_part(string_agg(distinct(setcode),'@'),'@',1)                                                           as t_setcode,
+                           min(number)                                                                                                   as t_number
                       FROM card
                 INNER JOIN set ON (set.code = card.setcode)
                      WHERE card.setcode = '{$setCode}'
-                     GROUP BY card.name, faceName
+                     GROUP BY card.name, faceName, number
                      ORDER BY t_name
                    ";
         }
@@ -358,19 +360,20 @@ class Card extends TRecord
                            split_part(string_agg(distinct(scryFallId),'@'),'@',1)   as t_scryFallId,
                            split_part(string_agg(distinct(side),'@'),'@',1)         as t_side,
                            split_part(string_agg(distinct(originalName),'@'),'@',1) as t_originalName,
-                           split_part(string_agg(distinct(setcode),'@'),'@',1)      as t_setcode
+                           split_part(string_agg(distinct(setcode),'@'),'@',1)      as t_setcode,
+                           min(number)                                              as t_number
                       FROM card
                 INNER JOIN set ON (set.code = card.setcode)
                      WHERE card.setcode = '{$setCode}'
-                     GROUP BY card.name, faceName
+                     GROUP BY card.name, faceName, number
                      ORDER BY t_name
                    ";
         }
 
-        $sql = "SELECT c.t_name as name, c.t_multiverseId as multiverseid, c.t_setcode as setcode,
+        $sql = "SELECT c.t_name as name, c.t_multiverseId as multiverseid, c.t_setcode as setcode, c.t_number,
                        c.t_scryFallId as scryfallid, c.t_side as side, c.t_originalName as originalname
                   FROM (
-               ".$sql." ) as c";
+               ".$sql." ) as c ORDER BY t_number::INTEGER ASC, t_side ASC";
 
         //Open transaction and fetch the results
         TTransaction::open(self::DATABASE);
@@ -385,6 +388,7 @@ class Card extends TRecord
         {
             $card = new Card;
             $card->fromArray($result);
+            $card->number = $result['t_number'];
             $card->image         = self::getImage($card->multiverseid,$card->scryfallid,$card->side);
             $card->getDescription();
             array_push($objects,$card);

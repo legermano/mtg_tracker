@@ -352,6 +352,9 @@ class ApplicationTranslator
         $this->messages['en'][] = 'Size';
         $this->messages['en'][] = 'Has card';
         $this->messages['en'][] = 'Release date';
+        $this->messages['en'][] = 'Owned';
+        $this->messages['en'][] = 'Not owned';
+        $this->messages['en'][] = 'Percentage of owned cards';
         //fim
 
         $this->messages['pt'] = [];
@@ -683,6 +686,9 @@ class ApplicationTranslator
         $this->messages['pt'][] = 'Tamanho';
         $this->messages['pt'][] = 'Possui carta';
         $this->messages['pt'][] = 'Data de lançamento';
+        $this->messages['pt'][] = 'Possui';
+        $this->messages['pt'][] = 'Não possui';
+        $this->messages['pt'][] = 'Porcentagem de cartas que possui';
         //fim
 
         $this->messages['es'] = [];

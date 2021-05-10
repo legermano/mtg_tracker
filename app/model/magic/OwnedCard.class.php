@@ -50,6 +50,20 @@ class OwnedCard extends TRecord
         return $this->card;
     }
 
+    public static function increment($uuid,$foil = false)
+    {
+        TTransaction::open(self::DATABASE);
+        $card = new Card($uuid);
+        $criteria = new TCriteria();
+        $criteria->add(new TFilter('setcode','=',$card->setcode));
+        $criteria->add(new TFilter('number', '=',$card->number));
+        $cards = Card::getObjects($criteria);
+        foreach ($cards as $card) {
+            OwnedCard::incrementQuantity($card->uuid,$foil);
+        }
+        TTransaction::close();
+    }
+
     public static function incrementQuantity($uuid,$foil = false)
     {
         TTransaction::open(self::DATABASE);
@@ -62,7 +76,7 @@ class OwnedCard extends TRecord
             foreach ($owneds as $owned) {
                 if ($foil)
                 {
-                    $owned->quantity_foil = $owned->quantity_foilç + 1;
+                    $owned->quantity_foil = $owned->quantity_foil + 1;
                 }
                 else
                 {
@@ -81,6 +95,20 @@ class OwnedCard extends TRecord
             $owned->quantity_foil  = $foil ? 1 : 0;
             $owned->store();
 
+        }
+        TTransaction::close();
+    }
+
+    public static function decrement($uuid,$foil = false)
+    {
+        TTransaction::open(self::DATABASE);
+        $card = new Card($uuid);
+        $criteria = new TCriteria();
+        $criteria->add(new TFilter('setcode','=',$card->setcode));
+        $criteria->add(new TFilter('number', '=',$card->number));
+        $cards = Card::getObjects($criteria);
+        foreach ($cards as $card) {
+            OwnedCard::decrementQuantity($card->uuid,$foil);
         }
         TTransaction::close();
     }

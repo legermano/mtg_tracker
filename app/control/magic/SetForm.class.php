@@ -69,7 +69,7 @@ class SetForm extends TStandardForm
 
         $this->cards = new TCardView;
         $this->cards->setContentHeight(170);
-        $this->cards->setTitleAttribute('{name}');
+        $this->cards->setTitleAttribute('{name} (#{number})');
         $this->cards->enableSearch($input_search,'name' );
         $this->cards->setItemTemplate('<div style="display: flex; justify-content: center;"><img style="height:250px;float:right;margin:5px" src="{image}"></div>');
         $this->cards->addAction($open_action, _t('View'), 'fa:search blue');

@@ -79,7 +79,7 @@ class CardForm extends TStandardForm
 
             $row = $$pageDescr->addRow();
             $row->addCell(new TLabel(_t('Card Name') . ':'));
-            $row->addCell($card->name);
+            $row->addCell("$card->name (#{$card->number})");
 
             $row = $$pageDescr->addRow();
             $row->addCell(new TLabel(_t('Mana Cost').':'));
@@ -87,7 +87,7 @@ class CardForm extends TStandardForm
 
             $row = $$pageDescr->addRow();
             $row->addCell(new TLabel(_t('Converted Mana Cost').':'));
-            $row->addCell( $card->manacost ? number_format(floatval($card->convertedManaCost),0) : 'N/A' );
+            $row->addCell( $card->manacost ? number_format(floatval($card->convertedmanacost),0) : 'N/A' );
 
             $row = $$pageDescr->addRow();
             $row->addCell(new TLabel(_t('Type').':'));
@@ -289,7 +289,7 @@ class CardForm extends TStandardForm
         }
 
         TScript::create("document.getElementById('{$elementId}').value = parseInt(document.getElementById('{$elementId}').value) + 1");
-        OwnedCard::incrementQuantity($param['id'],$param['foil']);
+        OwnedCard::increment($param['id'],$param['foil']);
     }
 
     public static function decrementQuantity($param)
@@ -306,6 +306,6 @@ class CardForm extends TStandardForm
                 document.getElementById('{$elementId}').value = val - 1;
              }"
         );
-        OwnedCard::decrementQuantity($param['id'],$param['foil']);
+        OwnedCard::decrement($param['id'],$param['foil']);
     }
 }
