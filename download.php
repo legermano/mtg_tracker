@@ -1,13 +1,16 @@
 <?php
+
+use Adianti\Registry\TSession;
+
 require_once 'init.php';
-new TSession;
+new TSession();
 
 if (isset($_GET['file']) AND TSession::getValue('logged') )
 {
     $file      = $_GET['file'];
     $info      = pathinfo($file);
     $extension = $info['extension'];
-    
+
     $content_type_list = array();
     $content_type_list['txt']  = 'text/plain';
     $content_type_list['html'] = 'text/html';
@@ -33,12 +36,12 @@ if (isset($_GET['file']) AND TSession::getValue('logged') )
     $content_type_list['bz']   = 'application/x-bzip';
     $content_type_list['bz2']  = 'application/x-bzip2';
     $content_type_list['tar']  = 'application/x-tar';
-    
+
     if (file_exists($file) AND in_array(strtolower($extension), array_keys($content_type_list)))
     {
         $basename = !empty($_GET['basename']) ? $_GET['basename'] : basename($file);
         $filesize = filesize($file); // get the filesize
-        
+
         header("Pragma: public");
         header("Expires: 0"); // set expiration time
         header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
@@ -46,7 +49,7 @@ if (isset($_GET['file']) AND TSession::getValue('logged') )
         header("Content-Length: {$filesize}");
         header("Content-disposition: inline; filename=\"{$basename}\"");
         header("Content-Transfer-Encoding: binary");
-        
+
         // a readfile da problemas no internet explorer
         // melhor jogar direto o conteudo do arquivo na tela
         echo file_get_contents($file);

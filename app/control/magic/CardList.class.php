@@ -24,6 +24,7 @@ use Adianti\Widget\Util\TXMLBreadCrumb;
 use Adianti\Widget\Container\TPanelGroup;
 use Adianti\Database\TExpression;
 use Adianti\Widget\Form\TCheckButton;
+use Adianti\Widget\Wrapper\TDBMultiSearch;
 
 class CardList extends TStandardList
 {
@@ -56,8 +57,8 @@ class CardList extends TStandardList
         $name    = new TEntry("name");
         $criteriaSet = new TCriteria;
         $criteriaSet->add(new TFilter('isOnlineOnly', '=', 'f'));
-        $setCode = new TDBUniqueSearch("setCode","mtg_tracker","Set","code","name","name asc",$criteriaSet);
-        $format  = new TDBUniqueSearch("format","mtg_tracker","Format","format_key","name","name asc");
+        $setCode = new TDBMultiSearch("setCode","mtg_tracker","Set","code","name","name asc",$criteriaSet);
+        $format  = new TDBMultiSearch("format","mtg_tracker","Format","format_key","name","name asc");
         $hasCard = new TCheckButton('hasCard');
 
         //Add the fields
@@ -208,7 +209,7 @@ class CardList extends TStandardList
             }
 
             //Custom count of total results
-            $count = Card::countCardsByName($name,$setCode);
+            $count = Card::countCardsByName($name,$setCode,$format,(!empty($hasCard)));
 
             if (isset($this->pageNavigation))
             {

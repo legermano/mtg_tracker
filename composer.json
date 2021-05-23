@@ -13,7 +13,8 @@
     "pablodalloglio/ole": "dev-master",
     "pablodalloglio/spreadsheet_excel_writer": "dev-master",
     "pablodalloglio/fpdf": "dev-master",
-    "halaxa/json-machine": "^0.6.0"
+    "halaxa/json-machine": "^0.6.0",
+    "geekcom/phpjasper": "^3.3"
   },
   "config": {
     "preferred-install": {

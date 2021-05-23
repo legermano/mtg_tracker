@@ -13,5 +13,8 @@ class Format extends TRecord
         parent::__construct($id);
         parent::addAttribute('name');
         parent::addAttribute('format_key');
+        parent::addAttribute('min_size');
+        parent::addAttribute('max_size');
+        parent::addAttribute('sideboard');
     }
 }

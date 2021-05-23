@@ -5,15 +5,40 @@
     <menu>
       <menuitem label="_t{Cards}">
         <action>CardList</action>
-        <icon>fas:sim-card fa-fw</icon>
+        <icon>fas:circle-notch fa-fw</icon>
       </menuitem>
       <menuitem label="_t{Formats}">
         <action>FormatList</action>
-        <icon>fas:clipboard-list fa-fw</icon>
+        <icon>fas:circle-notch fa-fw</icon>
       </menuitem>
       <menuitem label="_t{Sets}">
         <action>SetList</action>
-        <icon>fas:book fa-fw</icon>
+        <icon>fas:circle-notch fa-fw</icon>
+      </menuitem>
+    </menu>
+  </menuitem>
+  <menuitem label="_t{Reports}">
+    <icon>far:chart-bar fa-fw</icon>
+    <menu>
+      <menuitem label="_t{Owned cards}">
+        <action>OwnedCardsReport</action>
+        <icon>fas:circle-notch fa-fw</icon>
+      </menuitem>
+      <menuitem label="_t{Card's prices}">
+        <action>CardsPriceReport</action>
+        <icon>fas:circle-notch fa-fw</icon>
+      </menuitem>
+      <menuitem label="Decks">
+        <action>DecksReport</action>
+        <icon>fas:circle-notch fa-fw</icon>
+      </menuitem>
+      <menuitem label="_t{Decks - Cards not owned}">
+        <action>DecksCardsNotOwnedReport</action>
+        <icon>fas:circle-notch fa-fw</icon>
+      </menuitem>
+      <menuitem label="_t{Formats}">
+        <action>FormatsReport</action>
+        <icon>fas:circle-notch fa-fw</icon>
       </menuitem>
     </menu>
   </menuitem>

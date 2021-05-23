@@ -79,7 +79,7 @@ class Card extends TRecord
     public function __construct($id = null)
     {
         parent::__construct($id);
-        parent::addAttribute('allNames');
+        parent::addAttribute('allnames');
         parent::addAttribute('artist');
         parent::addAttribute('availability');
         parent::addAttribute('bordercolor');
@@ -91,7 +91,7 @@ class Card extends TRecord
         parent::addAttribute('convertedmanacost');
         parent::addAttribute('dueldeck');
         parent::addAttribute('edhrecRank');
-        parent::addAttribute('faceConvertedmanacost');
+        parent::addAttribute('faceconvertedmanacost');
         parent::addAttribute('facename');
         parent::addAttribute('flavorname');
         parent::addAttribute('flavortext');
@@ -99,7 +99,7 @@ class Card extends TRecord
         parent::addAttribute('frameeffects');
         parent::addAttribute('frameversion');
         parent::addAttribute('hand');
-        parent::addAttribute('hasAlternativedecklimit');
+        parent::addAttribute('hasalternativedecklimit');
         parent::addAttribute('hascontentwarning');
         parent::addAttribute('hasfoil');
         parent::addAttribute('hasnonfoil');
@@ -146,7 +146,7 @@ class Card extends TRecord
         parent::addAttribute('rullings');
         parent::addAttribute('scryfallid');
         parent::addAttribute('scryfallillustrationid');
-        parent::addAttribute('scryfalloracleId');
+        parent::addAttribute('scryfalloracleid');
         parent::addAttribute('setcode');
         parent::addAttribute('setname');
         parent::addAttribute('side');
@@ -163,12 +163,26 @@ class Card extends TRecord
         parent::addAttribute('watermark');
     }
 
-    public static function getCards($name = "", $setCode = "", $format = "", $ownsCard = false, $limit = 10, $offset = 0)
+    public static function getCards($name = "", $setCode = NULL, $format = NULL, $ownsCard = false, $limit = 10, $offset = 0)
     {
         // Removes the " symbol
         // Some cards have this on the name and it breaks the sql statement
         $name    = str_replace("'","''",$name);
         $user_id = TSession::getValue('userid');
+        $limit   = $limit  ?? 10;
+        $offset  = $offset ?? 0;
+
+        if ($format)
+        {
+            $format = implode("','",$format);
+            $format = "'{$format}'";
+        }
+
+        if ($setCode)
+        {
+            $setCode = implode("','",$setCode);
+            $setCode = "'{$setCode}'";
+        }
 
         // If the current language is portugues
         // Needs to run a different query to order by name correctly
@@ -214,9 +228,9 @@ class Card extends TRecord
         }
 
         $sql .= "WHERE isonlineonly = 'f'
-                   AND (allnames ->> 'names' ilike '%{$name}%' OR coalesce(facename,name) ilike '%{$name}%')
-                   AND setcode ilike '%{$setCode}%' ".
-                (empty($format) ? "" : "AND (legalities ->> 'legalities' ilike '%{$format}%')") .
+                   AND (allnames ->> 'names' ilike '%{$name}%' OR coalesce(facename,name) ilike '%{$name}%') ".
+                ($setCode == NULL ? "" : "AND setcode in ({$setCode})").
+                ($format  == NULL ? "" : "AND jsonb_exists_any(legalities -> 'legalities',array[{$format}]) ") .
                 "GROUP BY name, facename, manacost, convertedmanacost
                  ORDER BY t_name
                  LIMIT {$limit}
@@ -442,22 +456,37 @@ class Card extends TRecord
         return $text;
     }
 
-    public static function countCardsByName($name,$setCode)
+    public static function countCardsByName($name,$setCode = NULL,$format = NULL,$ownsCard = false)
     {
         $name    = str_replace("\"","",$name);
         $name    = str_replace("'","''",$name);
-        $setCode = str_replace("\"","",$setCode);
+        $user_id = TSession::getValue('userid');
+
+        if ($setCode)
+        {
+            $setCode = implode("','",$setCode);
+            $setCode = "'{$setCode}'";
+        }
+
+        if ($format)
+        {
+            $format = implode("','",$format);
+            $format = "'{$format}'";
+        }
 
         TTransaction::open(self::DATABASE);
         $conn = TTransaction::get();
         $sql = "SELECT count(a.*) AS \"count\"
                   FROM (
-                      SELECT name
+                      SELECT card.name
                       FROM card
-                      WHERE isOnlineOnly = 'f'
-                        AND (allNames ->> 'names' ilike '%{$name}%' OR coalesce(faceName,name) ilike '%{$name}%')
-                        AND printings ->> 'printings' ilike '%{$setCode}%'
-                      GROUP BY name
+                      INNER JOIN set ON (set.code = card.setCode)".
+                      ($ownsCard ? "INNER JOIN owned_card ON (owned_card.card_uuid = card.uuid AND owned_card.system_user_id = {$user_id} AND ( owned_card.quantity > 0 OR owned_card.quantity_foil > 0)) " : "").
+                      "WHERE card.isOnlineOnly = 'f'
+                        AND (allNames ->> 'names' ilike '%{$name}%' OR coalesce(faceName,card.name) ilike '%{$name}%') ".
+                        ($setCode == NULL ? "" : "AND setcode in ({$setCode}) ").
+                        ($format  == NULL ? "" : "AND jsonb_exists_any(legalities -> 'legalities',array[{$format}]) ") .
+                      "GROUP BY card.name
                   ) as a";
         $sth = $conn->prepare($sql);
         $sth->execute();

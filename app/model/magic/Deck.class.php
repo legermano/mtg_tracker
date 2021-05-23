@@ -1,4 +1,4 @@
-<?
+<?php
 
 use Adianti\Database\TCriteria;
 use Adianti\Database\TFilter;

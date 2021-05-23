@@ -355,6 +355,18 @@ class ApplicationTranslator
         $this->messages['en'][] = 'Owned';
         $this->messages['en'][] = 'Not owned';
         $this->messages['en'][] = 'Percentage of owned cards';
+        $this->messages['en'][] = 'Reports';
+        $this->messages['en'][] = 'Owned cards';
+        $this->messages['en'][] = 'Card name';
+        $this->messages['en'][] = 'Output format';
+        $this->messages['en'][] = 'Report successfully generated';
+        $this->messages['en'][] = 'Owned cards percentage';
+        $this->messages['en'][] = "Card's prices";
+        $this->messages['en'][] = "Normal ascendant";
+        $this->messages['en'][] = "Normal descendant";
+        $this->messages['en'][] = "Foil ascendant";
+        $this->messages['en'][] = "Foil descendant";
+        $this->messages['en'][] = "Decks - Cards not owned";
         //fim
 
         $this->messages['pt'] = [];
@@ -689,6 +701,18 @@ class ApplicationTranslator
         $this->messages['pt'][] = 'Possui';
         $this->messages['pt'][] = 'Não possui';
         $this->messages['pt'][] = 'Porcentagem de cartas que possui';
+        $this->messages['pt'][] = 'Relatórios';
+        $this->messages['pt'][] = 'Cartas possuidas';
+        $this->messages['pt'][] = 'Nome da carta';
+        $this->messages['pt'][] = 'Formato de saída';
+        $this->messages['pt'][] = 'Relatório gerado com sucesso';
+        $this->messages['pt'][] = 'Porcentagem de cartas possuídas';
+        $this->messages['pt'][] = 'Preços da carta';
+        $this->messages['pt'][] = "Normal ascendente";
+        $this->messages['pt'][] = "Normal descendente";
+        $this->messages['pt'][] = "Foil ascendente";
+        $this->messages['pt'][] = "Foil descendente";
+        $this->messages['pt'][] = "Decks - Cartas que não possui";
         //fim
 
         $this->messages['es'] = [];

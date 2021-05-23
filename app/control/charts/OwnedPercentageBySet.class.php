@@ -12,13 +12,14 @@ class OwnedPercentageBySet extends TPage
 
         $this->html = new THtmlRenderer('app/resources/google_bar_chart.html');
 
-        $sql = "SELECT set.name, set.totalsetsize, count(distinct(card_uuid)) as quantity_owned
+        $sql = "SELECT set.name, set.totalsetsize, count(distinct(card.number)) as quantity_owned
                   FROM owned_card
             INNER JOIN card ON (owned_card.card_uuid = card.uuid)
             INNER JOIN set  ON (card.setcode = set.code)
                  WHERE owned_card.system_user_id = {$system_user_id}
                    AND (owned_card.quantity > 0 OR owned_card.quantity_foil > 0)
-              GROUP BY set.code";
+              GROUP BY set.code
+              ORDER BY set.releaseDate ASC";
 
         TTransaction::open('mtg_tracker');
         $conn = TTransaction::get();
@@ -33,14 +34,19 @@ class OwnedPercentageBySet extends TPage
             $data[] = [$result['name'],$result['quantity_owned'], $result['totalsetsize']];
         }
 
-        $this->html->enableSection('main', ['data' => json_encode($data),
-                                            'width' => '100%',
-                                            'height' => '300px',
-                                            'stacked' => 'percent',
-                                            'title' => 'Porcentagem de cartas possuídas',
-                                            'xtitle' => '',
-                                            'ytitle' => _t('Sets'),
-                                            'uniqid' => uniqid()]);
+        $this->html->enableSection(
+            'main',
+            [
+             'data'    => json_encode($data),
+             'width'   => '100%',
+             'height'  => '500px',
+             'stacked' => 'percent',
+             'title'   => _t('Owned cards percentage'),
+             'xtitle'  => '',
+             'ytitle'  => _t('Sets'),
+             'uniqid'  => uniqid()
+            ]
+        );
 
         parent::add($this->html);
     }
