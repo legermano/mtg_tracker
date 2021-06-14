@@ -367,6 +367,18 @@ class ApplicationTranslator
         $this->messages['en'][] = "Foil ascendant";
         $this->messages['en'][] = "Foil descendant";
         $this->messages['en'][] = "Decks - Cards not owned";
+        $this->messages['en'][] = "Minimum size";
+        $this->messages['en'][] = "Maximum size";
+        $this->messages['en'][] = "Creation date";
+        $this->messages['en'][] = "Decrease";
+        $this->messages['en'][] = "White";
+        $this->messages['en'][] = "Green";
+        $this->messages['en'][] = "Red";
+        $this->messages['en'][] = "Black";
+        $this->messages['en'][] = "Blue";
+        $this->messages['en'][] = "Colors";
+        $this->messages['en'][] = "Lands";
+        $this->messages['en'][] = "Both";
         //fim
 
         $this->messages['pt'] = [];
@@ -713,6 +725,18 @@ class ApplicationTranslator
         $this->messages['pt'][] = "Foil ascendente";
         $this->messages['pt'][] = "Foil descendente";
         $this->messages['pt'][] = "Decks - Cartas que não possui";
+        $this->messages['pt'][] = "Tamanho mínimo";
+        $this->messages['pt'][] = "Tamanho máximo";
+        $this->messages['pt'][] = "Date de criação";
+        $this->messages['pt'][] = "Diminuir";
+        $this->messages['pt'][] = "Branco";
+        $this->messages['pt'][] = "Verde";
+        $this->messages['pt'][] = "Vermelho";
+        $this->messages['pt'][] = "Preto";
+        $this->messages['pt'][] = "Azul";
+        $this->messages['pt'][] = "Cores";
+        $this->messages['pt'][] = "Terrenos";
+        $this->messages['pt'][] = "Ambos";
         //fim
 
         $this->messages['es'] = [];

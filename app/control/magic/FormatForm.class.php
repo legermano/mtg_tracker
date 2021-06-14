@@ -11,6 +11,7 @@ use Adianti\Widget\Form\TEntry;
 use Adianti\Widget\Form\TLabel;
 use Adianti\Widget\Util\TXMLBreadCrumb;
 use Adianti\Wrapper\BootstrapFormBuilder;
+use Validator\TCustomNumericValidator;
 
 class FormatForm extends TStandardForm
 {
@@ -35,9 +36,12 @@ class FormatForm extends TStandardForm
         parent::setActiveRecord('Format');
 
         //Create the form fields
-        $id   = new TEntry('id');
-        $name = new TEntry('name');
-        $key  = new TEntry('format_key');
+        $id        = new TEntry('id');
+        $name      = new TEntry('name');
+        $key       = new TEntry('format_key');
+        $min_size  = new TEntry('min_size');
+        $max_size  = new TEntry('max_size');
+        $sideboard = new TEntry('sideboard');
 
         $id->setEditable(false);
 
@@ -45,6 +49,9 @@ class FormatForm extends TStandardForm
         $this->form->addFields( [new TLabel('ID')],[$id]);
         $this->form->addFields( [new TLabel(_t('Name'))],[$name]);
         $this->form->addFields( [new TLabel(_t('Key'))],[$key]);
+        $this->form->addFields( [new TLabel(_t('Minimum size'))],[$min_size]);
+        $this->form->addFields( [new TLabel(_t('Maximum size'))],[$max_size]);
+        $this->form->addFields( [new TLabel(('Sideboard'))],[$sideboard]);
 
         $id->setSize('30%');
         $name->setSize('70%');
@@ -52,6 +59,9 @@ class FormatForm extends TStandardForm
         //Validations
         $name->addValidation(_t('Name'), new TRequiredValidator);
         $key->addValidation(_t('Key'), new TRequiredValidator);
+        $min_size->addValidation(_t('Minimum size'), new TCustomNumericValidator);
+        $max_size->addValidation(_t('Maximum size'), new TCustomNumericValidator);
+        $sideboard->addValidation(_t('Maximum size'), new TCustomNumericValidator);
 
         //Add the actions
         $btn = $this->form->addAction(_t('Save'), new TAction(array($this, 'onSave')), 'far:save');

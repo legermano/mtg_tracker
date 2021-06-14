@@ -30,6 +30,8 @@ class OwnedPercentageBySet extends TPage
 
         $data = [];
         $data[] = ['Set',_t('Owned'),_t('Not owned')];
+        $numRows = count($results);
+        $height  = $numRows * 80;
         foreach ($results as $result) {
             $data[] = [$result['name'],$result['quantity_owned'], $result['totalsetsize']];
         }
@@ -39,7 +41,7 @@ class OwnedPercentageBySet extends TPage
             [
              'data'    => json_encode($data),
              'width'   => '100%',
-             'height'  => '500px',
+             'height'  => $height.'px',
              'stacked' => 'percent',
              'title'   => _t('Owned cards percentage'),
              'xtitle'  => '',

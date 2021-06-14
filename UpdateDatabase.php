@@ -70,7 +70,7 @@
                     {
                         if (array_key_exists("flavorText", $foreignData))
                         {
-                            $c->flavortextptbr   = $foreignData['flavorText'];
+                            $c->flavortextptbr = $foreignData['flavorText'];
                         }
                         if (array_key_exists("multiverseId", $foreignData))
                         {
@@ -78,15 +78,19 @@
                         }
                         if (array_key_exists("name", $foreignData))
                         {
-                            $c->nameptbr         = $foreignData['name'];
+                            $c->nameptbr = $foreignData['name'];
+                        }
+                        if (array_key_exists("faceName", $foreignData))
+                        {
+                            $c->facenameptbr = $foreignData['faceName'];
                         }
                         if (array_key_exists("text", $foreignData))
                         {
-                            $c->textptbr         = $foreignData['text'];
+                            $c->textptbr = $foreignData['text'];
                         }
                         if (array_key_exists("type", $foreignData))
                         {
-                            $c->typeptbr         = $foreignData['type'];
+                            $c->typeptbr = $foreignData['type'];
                         }
                     }
                 }
@@ -111,7 +115,13 @@
 
             if (array_key_exists("colorIdentity", $card))
             {
-                $c->coloridentity = implode($card['colorIdentity']);
+                sort($card['colorIdentity']);
+                $coloridentity = implode('","',$card['colorIdentity']);
+                if (!empty($coloridentity))
+                {
+                    $coloridentity = '{"'.$coloridentity.'"}';
+                }
+                $c->coloridentity = $coloridentity;
             }
 
             if (array_key_exists("colors", $card))

@@ -15,6 +15,10 @@
         <action>SetList</action>
         <icon>fas:circle-notch fa-fw</icon>
       </menuitem>
+      <menuitem label="Decks">
+        <action>DeckList</action>
+        <icon>fas:circle-notch fa-fw</icon>
+      </menuitem>
     </menu>
   </menuitem>
   <menuitem label="_t{Reports}">

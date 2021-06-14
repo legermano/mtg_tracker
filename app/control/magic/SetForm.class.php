@@ -42,7 +42,7 @@ class SetForm extends TStandardForm
         $date->setEditable(false);
         $online = new TRadioGroup('isonlineonly');
         $online->setEditable(false);
-        $online->addItems(['t' => 'Sim', 'f' => 'Não']);
+        $online->addItems(['t' => _t('Yes'), 'f' => _t('No')]);
         $online->setLayout('horizontal');
 
         //Add the fields

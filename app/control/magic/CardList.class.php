@@ -5,7 +5,6 @@ use Adianti\Wrapper\BootstrapFormBuilder;
 use Adianti\Widget\Form\TEntry;
 use Adianti\Database\TCriteria;
 use Adianti\Database\TFilter;
-use Adianti\Widget\Wrapper\TDBUniqueSearch;
 use Adianti\Widget\Form\TLabel;
 use Adianti\Registry\TSession;
 use Adianti\Wrapper\BootstrapDatagridWrapper;

@@ -93,6 +93,7 @@ class Card extends TRecord
         parent::addAttribute('edhrecRank');
         parent::addAttribute('faceconvertedmanacost');
         parent::addAttribute('facename');
+        parent::addAttribute('facenameptbr');
         parent::addAttribute('flavorname');
         parent::addAttribute('flavortext');
         parent::addAttribute('flavortextptbr');
@@ -163,7 +164,20 @@ class Card extends TRecord
         parent::addAttribute('watermark');
     }
 
-    public static function getCards($name = "", $setCode = NULL, $format = NULL, $ownsCard = false, $limit = 10, $offset = 0)
+    /**
+     * Function that returns cards grouped by their name
+     *
+     * @param string  $name
+     * @param Array   $setCode
+     * @param Array   $format
+     * @param boolean $ownsCard
+     * @param integer $limit
+     * @param integer $offset
+     * @return array
+     *
+     * @author Lucas Germano <lucas.germano@universo.univates.br>
+     */
+    public static function getCards($name = "", $setCode = NULL, $format = NULL, $ownsCard = false, $limit = 10, $offset = 0): array
     {
         // Removes the " symbol
         // Some cards have this on the name and it breaks the sql statement
@@ -189,7 +203,7 @@ class Card extends TRecord
         if (ApplicationTranslator::getLanguage() == 'pt')
         {
             $sql = "SELECT manacost, convertedmanacost,
-                           split_part(coalesce(string_agg(distinct(nameptbr),'@'),coalesce(facename,name)),'@',1)                        as t_name,
+                           split_part(coalesce(string_agg(distinct(coalesce(facenameptbr,nameptbr)),'@'),coalesce(facename,name)),'@',1)                        as t_name,
                            split_part(coalesce(string_agg(distinct(flavortextptbr),'@'),string_agg(distinct(flavortext),'@')),'@',1)     as t_flavortext,
                            split_part(coalesce(string_agg(distinct(multiverseidptbr),'@'),string_agg(distinct(multiverseid),'@')),'@',1) as t_multiverseid,
                            split_part(coalesce(string_agg(distinct(textptbr),'@'),string_agg(distinct(text),'@')),'@',1)                 as t_text,
@@ -271,11 +285,21 @@ class Card extends TRecord
 
     }
 
-    public static function getCard($name,$setCode)
+    /**
+     * Function that returns all versions of a certain card
+     *
+     * @param string $name
+     * @param string $setCode
+     * @return array
+     *
+     * @author Lucas Germano <lucas.germano@universo.univates.br>
+     */
+    public static function getCard($name,$setCode): array
     {
         // Removes the " symbol
         // Some cards have this on the name and it breaks the sql statement
         $name    = str_replace("'","''",$name);
+        $setCode = str_replace("'","",$setCode);
         $user_id = TSession::getValue('userid');
 
         if (ApplicationTranslator::getLanguage() == 'pt')
@@ -283,16 +307,16 @@ class Card extends TRecord
             $sql = "SELECT manaCost, convertedManaCost, side, scryfallId, uuid,
                            originalName, setCode, loyalty, rarity, artist, prices,
                            keyruneCode,
-                           coalesce(owned_card.quantity,0)                 as quantity,
-                           coalesce(owned_card.quantity_foil,0)            as quantity_foil,
-                           coalesce(nameptbr,coalesce(faceName,card.name)) as name,
-                           coalesce(flavorTextptbr,flavorText)             as flavortext,
-                           coalesce(multiverseIdptbr,multiverseId)         as multiverseid,
-                           coalesce(textptbr,text)                         as text,
-                           coalesce(typeptbr,card.type)                    as type,
-                           set.name                                        as setname,
-                           (legalities ->> 'legalities')                   as legalities,
-                           card.number                                     as number
+                           coalesce(owned_card.quantity,0)                                        as quantity,
+                           coalesce(owned_card.quantity_foil,0)                                   as quantity_foil,
+                           coalesce(coalesce(facenameptbr,nameptbr),coalesce(faceName,card.name)) as name,
+                           coalesce(flavorTextptbr,flavorText)                                    as flavortext,
+                           coalesce(multiverseIdptbr,multiverseId)                                as multiverseid,
+                           coalesce(textptbr,text)                                                as text,
+                           coalesce(typeptbr,card.type)                                           as type,
+                           set.name                                                               as setname,
+                           (legalities ->> 'legalities')                                          as legalities,
+                           card.number                                                            as number
                       FROM card
                 INNER JOIN set ON (set.code = card.setCode)
                  LEFT JOIN owned_card ON (owned_card.card_uuid = card.uuid AND owned_card.system_user_id = {$user_id})
@@ -349,11 +373,20 @@ class Card extends TRecord
         return $objects;
     }
 
-    public static function getCardsBySet($setCode)
+
+    /**
+     * Function that return all cards from a specific set
+     *
+     * @param string $setCode
+     * @return array
+     *
+     * @author Lucas Germano <lucas.germano@universo.univates.br>
+     */
+    public static function getCardsBySet($setCode): array
     {
         if (ApplicationTranslator::getLanguage() == 'pt')
         {
-            $sql = "SELECT split_part(coalesce(string_agg(distinct(nameptbr),'@'),coalesce(faceName,card.name)),'@',1)                   as t_name,
+            $sql = "SELECT split_part(coalesce(string_agg(coalesce(facenameptbr,nameptbr),'@'),coalesce(faceName,card.name)),'@',1)      as t_name,
                            split_part(coalesce(string_agg(distinct(multiverseIdptbr),'@'),string_agg(distinct(multiverseId),'@')),'@',1) as t_multiverseId,
                            split_part(string_agg(distinct(scryFallId),'@'),'@',1)                                                        as t_scryFallId,
                            split_part(string_agg(distinct(side),'@'),'@',1)                                                              as t_side,
@@ -411,6 +444,133 @@ class Card extends TRecord
         return $objects;
     }
 
+    /**
+     * Function that returns card from certain format
+     *
+     * @param integer      $format
+     * @param integer      $limit
+     * @param integer      $offset
+     * @param boolean|null $land
+     * @return array
+     *
+     * @author Lucas Germano <lucas.germano@universo.univates.br>
+     */
+    public static function getCardsByFormat($format,$name,$limit = 10, $offset = 0,$land = NULL,$colors): array
+    {
+        $name = str_replace("'","''",$name);
+
+        if (ApplicationTranslator::getLanguage() == 'pt')
+        {
+            $sql = "SELECT split_part(coalesce(string_agg(distinct(nameptbr),'@'),card.name),'@',1)                                      as t_name,
+                           split_part(coalesce(string_agg(distinct(multiverseIdptbr),'@'),string_agg(distinct(multiverseId),'@')),'@',1) as t_multiverseId,
+                           split_part(string_agg(distinct(scryFallId),'@'),'@',1)                                                        as t_scryFallId,
+                           split_part(string_agg(distinct(side),'@'),'@',1)                                                              as t_side,
+                           split_part(string_agg(distinct(originalName),'@'),'@',1)                                                      as t_originalName,
+                           split_part(string_agg(distinct(setcode),'@'),'@',1)                                                           as t_setcode,
+                           min(number)                                                                                                   as t_number,
+                           hasalternativedecklimit                                                                                       as t_unlimit,
+                           split_part(string_agg(distinct(uuid),'@'),'@',1)                                                              as t_uuid,
+                           ( jsonb_exists_any(card.types -> 'types',array['Land']) )                                                     as t_land
+                   ";
+        }
+        else
+        {
+            $sql = "SELECT split_part(card.name,'@',1)                               as t_name,
+                           split_part(string_agg(distinct(multiverseId),'@'),'@',1)  as t_multiverseId,
+                           split_part(string_agg(distinct(scryFallId),'@'),'@',1)    as t_scryFallId,
+                           split_part(string_agg(distinct(side),'@'),'@',1)          as t_side,
+                           split_part(string_agg(distinct(originalName),'@'),'@',1)  as t_originalName,
+                           split_part(string_agg(distinct(setcode),'@'),'@',1)       as t_setcode,
+                           min(number)                                               as t_number,
+                           hasalternativedecklimit                                   as t_unlimit,
+                           split_part(string_agg(distinct(uuid),'@'),'@',1)          as t_uuid,
+                           ( jsonb_exists_any(card.types -> 'types',array['Land']) ) as t_land
+                   ";
+        }
+
+        $sql .= "      FROM card
+                      WHERE jsonb_exists_any(card.legalities -> 'legalities',array['{$format}'])
+                        AND (allnames ->> 'names' ilike '%{$name}%' OR coalesce(facename,name) ilike '%{$name}%')
+                ";
+
+        $colorWhere = "";
+        if (is_array($colors))
+        {
+            sort($colors);
+            $allColors = implode(',',$colors);
+            $allColors = '{'.$allColors.'}';
+        }
+
+        foreach ($colors as $key => $color)
+        {
+            if (empty($colorWhere))
+            {
+                $colorWhere .= " AND ( ";
+            }
+            else
+            {
+                $colorWhere .= " OR ";
+            }
+            $colorWhere .= " '{$color}' = ALL (card.coloridentity) ";
+        }
+
+        if (!empty($colorWhere))
+        {
+            $colorWhere .= " OR '{$allColors}' = card.coloridentity ) ";
+        }
+
+        $sql .= $colorWhere;
+
+        if (isset($land))
+        {
+            $sql .= " AND ".($land ? "" : "NOT")." ( jsonb_exists_any(card.types -> 'types',array['Land']) )
+                    ";
+        }
+
+        $sql .= "     GROUP BY card.name, number, hasalternativedecklimit, types
+                      ORDER BY t_name
+                      LIMIT {$limit}
+                     OFFSET {$offset}";
+
+        $sql = "SELECT c.t_name as name, c.t_multiverseId as multiverseid, c.t_setcode as setcode, c.t_number, c.t_uuid as uuid,
+                       c.t_scryFallId as scryfallid, c.t_side as side, c.t_originalName as originalname, c.t_unlimit, c.t_land as land
+                  FROM (
+               ".$sql." ) as c";
+
+        //Open transaction and fetch the results
+        TTransaction::open(self::DATABASE);
+        $conn = TTransaction::get();
+        $sth = $conn->prepare($sql);
+        $sth->execute();
+        $results = $sth->fetchAll();
+        TTransaction::close();
+
+        $objects = array();
+        foreach ($results as $result)
+        {
+            $card = new Card;
+            $card->fromArray($result);
+            $card->number  = $result['t_number'];
+            $card->image   = self::getImage($card->multiverseid,$card->scryfallid,$card->side);
+            $card->unlimit = $result['t_unlimit'];
+            $card->land    = $result['land'];
+            $card->getDescription();
+            array_push($objects,$card);
+        }
+
+        return $objects;
+    }
+
+    /**
+     * Get the image of a specific card
+     *
+     * @param integer $multiverseId
+     * @param integer $scryFallId
+     * @param string $side
+     * @return void
+     *
+     * @author Lucas Germano <lucas.germano@universo.univates.br>
+     */
     public static function getImage($multiverseId,$scryFallId,$side)
     {
         if ($multiverseId)
@@ -488,6 +648,72 @@ class Card extends TRecord
                         ($format  == NULL ? "" : "AND jsonb_exists_any(legalities -> 'legalities',array[{$format}]) ") .
                       "GROUP BY card.name
                   ) as a";
+        $sth = $conn->prepare($sql);
+        $sth->execute();
+        $result = $sth->fetchAll();
+        TTransaction::close();
+        return $result[0]['count'];
+    }
+
+    public static function countCardsByFormat($format,$name,$land = NULL,$colors): int
+    {
+        $name = str_replace("'","''",$name);
+
+        $sql = "SELECT count(a.*) AS \"count\"
+                  FROM (
+                    SELECT split_part(coalesce(card.name),'@',1)                    as t_name,
+                           split_part(string_agg(distinct(multiverseId),'@'),'@',1) as t_multiverseId,
+                           split_part(string_agg(distinct(scryFallId),'@'),'@',1)   as t_scryFallId,
+                           split_part(string_agg(distinct(side),'@'),'@',1)         as t_side,
+                           split_part(string_agg(distinct(originalName),'@'),'@',1) as t_originalName,
+                           split_part(string_agg(distinct(setcode),'@'),'@',1)      as t_setcode,
+                           min(number)                                              as t_number,
+                           hasalternativedecklimit                                  as t_unlimit
+                  FROM card
+                 WHERE jsonb_exists_any(card.legalities -> 'legalities',array['{$format}'])
+                   AND (allnames ->> 'names' ilike '%{$name}%' OR coalesce(facename,name) ilike '%{$name}%')
+                ";
+
+        if (isset($land))
+        {
+            $sql .= " AND ".($land ? "" : "NOT")." ( jsonb_exists_any(card.types -> 'types',array['Land']) )
+                    ";
+        }
+
+        $colorWhere = "";
+        if (is_array($colors))
+        {
+            sort($colors);
+            $allColors = implode(',',$colors);
+            $allColors = '{'.$allColors.'}';
+        }
+
+        foreach ($colors as $key => $color)
+        {
+            if (empty($colorWhere))
+            {
+                $colorWhere .= " AND ( ";
+            }
+            else
+            {
+                $colorWhere .= " OR ";
+            }
+            $colorWhere .= " '{$color}' = ALL (card.coloridentity) ";
+        }
+
+        if (!empty($colorWhere))
+        {
+            $colorWhere .= " OR '{$allColors}' = card.coloridentity ) ";
+        }
+
+        $sql .= $colorWhere;
+
+        $sql .= "GROUP BY card.name, number, hasalternativedecklimit
+                 ORDER BY t_name) as a";
+
+        //Open transaction and fetch the results
+        TTransaction::open(self::DATABASE);
+        $conn = TTransaction::get();
         $sth = $conn->prepare($sql);
         $sth->execute();
         $result = $sth->fetchAll();

@@ -7,7 +7,7 @@ CREATE TABLE card
     borderColor TEXT,
     cardKingdomFoilId TEXT,
     cardKingdomId TEXT,
-    colorIdentity TEXT,
+    colorIdentity TEXT[],
     colorIndicator TEXT,
     colors TEXT,
     convertedManaCost NUMERIC(10,2),
@@ -15,6 +15,7 @@ CREATE TABLE card
     edhrecRank INTEGER,
     faceConvertedManaCost NUMERIC(10,2),
     faceName TEXT,
+    faceNamePTBR TEXT,
     flavorName TEXT,
     flavorText TEXT,
     flavorTextPTBR TEXT,
@@ -126,7 +127,7 @@ CREATE TABLE deck_card
     deck_id int not null,
     card_uuid TEXT not null,
     quantity int,
-    FOREIGN KEY(deck_id) REFERENCES deck(id)
+    FOREIGN KEY(deck_id) REFERENCES deck(id) ON DELETE CASCADE
 );
 
 CREATE TABLE owned_card

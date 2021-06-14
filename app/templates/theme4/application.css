@@ -443,6 +443,12 @@ table.table[widget="tchecklist"]>tbody>tr>td:first-child
     border-radius: 3px;
     margin: 2px !important;
     margin-bottom: 8px !important;
+    /* width: 100px !important; */
+}
+
+div[deck_cards] .card-item
+{
+    width: 150px !important;
 }
 
 .card-header {
