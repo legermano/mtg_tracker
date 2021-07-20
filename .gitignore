@@ -4,3 +4,5 @@ AllPrices.json
 AllPrintings.json
 app/database/AllPrintings.sqlite
 app/output/*
+app/config/*
+.idea
